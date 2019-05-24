@@ -23,13 +23,31 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "c2b33e84"
 
+[[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "05d0070fca6ba3e96cede6091456c35845764bae2d78d9661d1cd41f8f2a5f16"
+  inputs-digest = "fbb7c73dfa8039fd5322feb04c9c11d7b664f5e6211b945b81a56fc2268c4e4d"
   solver-name = "gps-cdcl"
   solver-version = 1
