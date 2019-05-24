@@ -12,13 +12,10 @@
 package s3mem
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"io"
 	"io/ioutil"
-	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -113,44 +110,9 @@ func (c *S3Mem) CopyObjectRequest(*s3.CopyObjectInput) s3.CopyObjectRequest {
 	return s3.CopyObjectRequest{}
 }
 
-func (c *S3Mem) CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest {
-	if input == nil {
-		input = &s3.CreateBucketInput{}
-	}
-	output := &s3.CreateBucketOutput{
-		Location: input.Bucket,
-	}
-	req := &aws.Request{
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
-	tc := time.Now()
-	S3MemBuckets.Buckets[*input.Bucket] = &s3.Bucket{
-		CreationDate: &tc,
-		Name:         input.Bucket,
-	}
-	return s3.CreateBucketRequest{Request: req, Input: input, Copy: c.CreateBucketRequest}
-}
-
 func (c *S3Mem) CreateMultipartUploadRequest(*s3.CreateMultipartUploadInput) s3.CreateMultipartUploadRequest {
 	panic("Not implemented")
 	return s3.CreateMultipartUploadRequest{}
-}
-
-func (c *S3Mem) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest {
-	if input == nil {
-		input = &s3.DeleteBucketInput{}
-	}
-	output := &s3.DeleteBucketOutput{}
-	req := &aws.Request{
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
-	if _, ok := S3MemBuckets.Buckets[*input.Bucket]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchBucket)
-	}
-	delete(S3MemBuckets.Buckets, *input.Bucket)
-	return s3.DeleteBucketRequest{Request: req, Input: input, Copy: c.DeleteBucketRequest}
 }
 
 func (c *S3Mem) DeleteBucketAnalyticsConfigurationRequest(*s3.DeleteBucketAnalyticsConfigurationInput) s3.DeleteBucketAnalyticsConfigurationRequest {
@@ -201,28 +163,6 @@ func (c *S3Mem) DeleteBucketTaggingRequest(*s3.DeleteBucketTaggingInput) s3.Dele
 func (c *S3Mem) DeleteBucketWebsiteRequest(*s3.DeleteBucketWebsiteInput) s3.DeleteBucketWebsiteRequest {
 	panic("Not implemented")
 	return s3.DeleteBucketWebsiteRequest{}
-}
-
-func (c *S3Mem) DeleteObjectRequest(input *s3.DeleteObjectInput) s3.DeleteObjectRequest {
-	if input == nil {
-		input = &s3.DeleteObjectInput{}
-	}
-	output := &s3.DeleteObjectOutput{}
-	req := &aws.Request{
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
-	if _, ok := S3MemObjects.Objects[*input.Bucket]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchBucket)
-		return s3.DeleteObjectRequest{Request: req, Input: input, Copy: c.DeleteObjectRequest}
-	}
-	if _, ok := S3MemObjects.Objects[*input.Bucket][*input.Key]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchKey)
-		return s3.DeleteObjectRequest{Request: req, Input: input, Copy: c.DeleteObjectRequest}
-	}
-	delete(S3MemObjects.Objects[*input.Bucket][*input.Key], "1")
-	delete(S3MemObjects.Objects[*input.Bucket], *input.Key)
-	return s3.DeleteObjectRequest{Request: req, Input: input, Copy: c.DeleteObjectRequest}
 }
 
 func (c *S3Mem) DeleteObjectTaggingRequest(*s3.DeleteObjectTaggingInput) s3.DeleteObjectTaggingRequest {
@@ -340,27 +280,6 @@ func (c *S3Mem) GetBucketWebsiteRequest(*s3.GetBucketWebsiteInput) s3.GetBucketW
 	return s3.GetBucketWebsiteRequest{}
 }
 
-func (c *S3Mem) GetObjectRequest(input *s3.GetObjectInput) s3.GetObjectRequest {
-	if input == nil {
-		input = &s3.GetObjectInput{}
-	}
-	output := &s3.GetObjectOutput{}
-	req := &aws.Request{
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
-	if _, ok := S3MemObjects.Objects[*input.Bucket]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchBucket)
-		return s3.GetObjectRequest{Request: req, Input: input, Copy: c.GetObjectRequest}
-	}
-	if _, ok := S3MemObjects.Objects[*input.Bucket][*input.Key]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchKey)
-		return s3.GetObjectRequest{Request: req, Input: input, Copy: c.GetObjectRequest}
-	}
-	output.Body = ioutil.NopCloser(bytes.NewReader(S3MemObjects.Objects[*input.Bucket][*input.Key]["1"].Content))
-	return s3.GetObjectRequest{Request: req, Input: input, Copy: c.GetObjectRequest}
-}
-
 func (c *S3Mem) GetObjectAclRequest(*s3.GetObjectAclInput) s3.GetObjectAclRequest {
 	panic("Not implemented")
 	return s3.GetObjectAclRequest{}
@@ -421,24 +340,6 @@ func (c *S3Mem) ListBucketMetricsConfigurationsRequest(*s3.ListBucketMetricsConf
 	return s3.ListBucketMetricsConfigurationsRequest{}
 }
 
-func (c *S3Mem) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsRequest {
-	if input == nil {
-		input = &s3.ListBucketsInput{}
-	}
-	v := make([]s3.Bucket, 0)
-	for _, value := range S3MemBuckets.Buckets {
-		v = append(v, *value)
-	}
-	output := &s3.ListBucketsOutput{
-		Buckets: v,
-	}
-	req := &aws.Request{
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
-	return s3.ListBucketsRequest{Request: req, Input: input, Copy: c.ListBucketsRequest}
-}
-
 func (c *S3Mem) ListMultipartUploadsRequest(*s3.ListMultipartUploadsInput) s3.ListMultipartUploadsRequest {
 	panic("Not implemented")
 	return s3.ListMultipartUploadsRequest{}
@@ -447,30 +348,6 @@ func (c *S3Mem) ListMultipartUploadsRequest(*s3.ListMultipartUploadsInput) s3.Li
 func (c *S3Mem) ListObjectVersionsRequest(*s3.ListObjectVersionsInput) s3.ListObjectVersionsRequest {
 	panic("Not implemented")
 	return s3.ListObjectVersionsRequest{}
-}
-
-func (c *S3Mem) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsRequest {
-	if input == nil {
-		input = &s3.ListObjectsInput{}
-	}
-	output := &s3.ListObjectsOutput{}
-	operation := &aws.Operation{}
-	req := &aws.Request{
-		Data:        output,
-		Operation:   operation,
-		HTTPRequest: &http.Request{},
-	}
-	if _, ok := S3MemBuckets.Buckets[*input.Bucket]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchBucket)
-	}
-	v := make([]s3.Object, 0)
-	for _, obj := range S3MemObjects.Objects[*input.Bucket] {
-		if strings.HasPrefix(*obj["1"].Object.Key, *input.Prefix) {
-			v = append(v, *obj["1"].Object)
-		}
-	}
-	output.Contents = v
-	return s3.ListObjectsRequest{Request: req, Input: input, Copy: c.ListObjectsRequest}
 }
 
 func (c *S3Mem) ListObjectsV2Request(*s3.ListObjectsV2Input) s3.ListObjectsV2Request {
@@ -571,23 +448,6 @@ func (c *S3Mem) PutBucketVersioningRequest(*s3.PutBucketVersioningInput) s3.PutB
 func (c *S3Mem) PutBucketWebsiteRequest(*s3.PutBucketWebsiteInput) s3.PutBucketWebsiteRequest {
 	panic("Not implemented")
 	return s3.PutBucketWebsiteRequest{}
-}
-
-func (c *S3Mem) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
-	if input == nil {
-		input = &s3.PutObjectInput{}
-	}
-	output := &s3.PutObjectOutput{}
-	req := &aws.Request{
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
-	_, err := AddObject(*input.Bucket, *input.Key, input.Body)
-	if err != nil {
-		req.Error = errors.New(s3.ErrCodeNoSuchUpload)
-		return s3.PutObjectRequest{Request: req, Input: input, Copy: c.PutObjectRequest}
-	}
-	return s3.PutObjectRequest{Request: req, Input: input, Copy: c.PutObjectRequest}
 }
 
 func (c *S3Mem) PutObjectAclRequest(*s3.PutObjectAclInput) s3.PutObjectAclRequest {
