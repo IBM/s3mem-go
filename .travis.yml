@@ -1,0 +1,29 @@
+language: go
+sudo: required
+dist: xenial
+
+notifications:
+  email:
+    recipients:
+    - jpacker@ca.ibm.com
+    - dominique.vernier@us.ibm.com
+    - rokej@ca.ibm.com
+    on_success: change
+    on_failure: always
+
+go:
+  - "1.10"
+
+services:
+- docker
+
+before_script:
+- sed -i "s/git@github.ibm.com:/https:\/\/${CICD_FUNC_TOKEN}:x-oauth-basic@github.ibm.com\//g" Gopkg.toml
+- sed -i "s/git@github.ibm.com:/https:\/\/${CICD_FUNC_TOKEN}:x-oauth-basic@github.ibm.com\//g" Gopkg.lock
+- cat Gopkg.toml
+
+before_install:
+- make copyright-check
+
+script:
+- make
