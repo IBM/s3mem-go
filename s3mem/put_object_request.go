@@ -28,7 +28,7 @@ func (c *S3Mem) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
 		Data:        output,
 		HTTPRequest: &http.Request{},
 	}
-	_, err := AddObject(*input.Bucket, *input.Key, input.Body)
+	_, err := AddObject(input.Bucket, input.Key, input.Body)
 	if err != nil {
 		req.Error = errors.New(s3.ErrCodeNoSuchUpload)
 		return s3.PutObjectRequest{Request: req, Input: input, Copy: c.PutObjectRequest}
