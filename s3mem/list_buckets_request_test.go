@@ -24,7 +24,7 @@ func TestListBucketsRequest(t *testing.T) {
 	//and meanwhile another running test could change the stored buckets
 	S3MemBuckets.Mux.Lock()
 	defer S3MemBuckets.Mux.Unlock()
-
+	l := len(S3MemBuckets.Buckets)
 	//Adding bucket directly in mem to prepare the test.
 	bucket0 := strings.ToLower(t.Name() + "0")
 	bucket1 := strings.ToLower(t.Name() + "1")
@@ -40,5 +40,5 @@ func TestListBucketsRequest(t *testing.T) {
 	listBucketsOutput, err := req.Send(context.Background())
 	//Assert the result
 	assert.NoError(t, err)
-	assert.Equal(t, 2, len(listBucketsOutput.Buckets))
+	assert.Equal(t, l+2, len(listBucketsOutput.Buckets))
 }
