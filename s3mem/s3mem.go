@@ -51,46 +51,60 @@ func init() {
 	S3MemObjects.Objects = make(map[string]map[string]map[string]*Object, 0)
 }
 
+//Clear clears memory buckets and objects
 func Clear() {
 	S3MemBuckets.Buckets = make(map[string]*s3.Bucket, 0)
 	S3MemObjects.Objects = make(map[string]map[string]map[string]*Object, 0)
 }
 
+//GetBucket gets a bucket from memory
+func GetBucket(bucket *string) *s3.Bucket {
+	return S3MemBuckets.Buckets[*bucket]
+}
+
+//AddBucket adds a bucket in memory
 func AddBucket(b *s3.Bucket) {
 	S3MemBuckets.Buckets[*b.Name] = b
 }
 
+//DeleteBucket deletes an object from memory
 func DeleteBucket(b *s3.Bucket) {
 	delete(S3MemBuckets.Buckets, *b.Name)
 }
 
-func AddObject(bucket string, key string, body io.ReadSeeker) (*Object, error) {
-	if _, ok := S3MemBuckets.Buckets[bucket]; !ok {
+//AddObject adds an object in memory
+func AddObject(bucket *string, key *string, body io.ReadSeeker) (*Object, error) {
+	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
 		return nil, errors.New(s3.ErrCodeNoSuchBucket)
 	}
-	if _, ok := S3MemObjects.Objects[bucket]; !ok {
-		S3MemObjects.Objects[bucket] = make(map[string]map[string]*Object, 0)
+	if _, ok := S3MemObjects.Objects[*bucket]; !ok {
+		S3MemObjects.Objects[*bucket] = make(map[string]map[string]*Object, 0)
 	}
-	if _, ok := S3MemObjects.Objects[bucket][key]; !ok {
-		S3MemObjects.Objects[bucket][key] = make(map[string]*Object, 0)
+	if _, ok := S3MemObjects.Objects[*bucket][*key]; !ok {
+		S3MemObjects.Objects[*bucket][*key] = make(map[string]*Object, 0)
 	}
 	tc := time.Now()
 	content, err := ioutil.ReadAll(body)
 	if err != nil {
 		return nil, errors.New(s3.ErrCodeNoSuchUpload)
 	}
-	keyP := &key
-	S3MemObjects.Objects[bucket][key]["1"] = &Object{
+	S3MemObjects.Objects[*bucket][*key]["1"] = &Object{
 		Object: &s3.Object{
-			Key:          keyP,
+			Key:          key,
 			LastModified: &tc,
 			StorageClass: "memory",
 		},
 		Content: content,
 	}
-	return S3MemObjects.Objects[bucket][key]["1"], nil
+	return S3MemObjects.Objects[*bucket][*key]["1"], nil
 }
 
+//GetObject gets an object from memory
+func GetObject(bucket *string, key *string) *Object {
+	return S3MemObjects.Objects[*bucket][*key]["1"]
+}
+
+//NewClient creates a new client
 func NewClient() (s3iface.S3API, error) {
 	return &S3Mem{}, nil
 }

@@ -36,7 +36,11 @@ func (c *S3Mem) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsReq
 	}
 	v := make([]s3.Object, 0)
 	for _, obj := range S3MemObjects.Objects[*input.Bucket] {
-		if strings.HasPrefix(*obj["1"].Object.Key, *input.Prefix) {
+		if input.Prefix != nil {
+			if strings.HasPrefix(*obj["1"].Object.Key, *input.Prefix) {
+				v = append(v, *obj["1"].Object)
+			}
+		} else {
 			v = append(v, *obj["1"].Object)
 		}
 	}
