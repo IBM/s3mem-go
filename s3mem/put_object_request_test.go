@@ -8,6 +8,7 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
+
 package s3mem
 
 import (
@@ -19,26 +20,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestListBucketsRequest(t *testing.T) {
-	//Need to lock for testing as tests are running concurrently
-	//and meanwhile another running test could change the stored buckets
-	S3MemBuckets.Mux.Lock()
-	defer S3MemBuckets.Mux.Unlock()
-	l := len(S3MemBuckets.Buckets)
+func TestPutObjectRequest(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
-	bucket0 := strings.ToLower(t.Name() + "0")
-	bucket1 := strings.ToLower(t.Name() + "1")
-	AddBucket(&s3.Bucket{Name: &bucket0})
-	AddBucket(&s3.Bucket{Name: &bucket1})
+	bucketName := strings.ToLower(t.Name())
+	AddBucket(&s3.Bucket{Name: &bucketName})
+	//Adding an Object directly in mem to prepare the test.
+	objectKey := "my-object"
+	content := "test content"
 	//Request a client
 	client, err := NewClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	//Create the request
-	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
+	req := client.PutObjectRequest(&s3.PutObjectInput{
+		Bucket: &bucketName,
+		Key:    &objectKey,
+		Body:   strings.NewReader(string(content)),
+	})
 	//Send the request
-	listBucketsOutput, err := req.Send(context.Background())
-	//Assert the result
+	_, err = req.Send(context.Background())
 	assert.NoError(t, err)
-	assert.Equal(t, l+2, len(listBucketsOutput.Buckets))
+
+	object := GetObject(&bucketName, &objectKey)
+	assert.NotNil(t, object)
+
+	assert.Equal(t, content, string(object.Content))
 }
