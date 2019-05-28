@@ -8,6 +8,7 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
+
 package s3mem
 
 import (
@@ -19,26 +20,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestListBucketsRequest(t *testing.T) {
-	//Need to lock for testing as tests are running concurrently
-	//and meanwhile another running test could change the stored buckets
-	S3MemBuckets.Mux.Lock()
-	defer S3MemBuckets.Mux.Unlock()
-	l := len(S3MemBuckets.Buckets)
-	//Adding bucket directly in mem to prepare the test.
-	bucket0 := strings.ToLower(t.Name() + "0")
-	bucket1 := strings.ToLower(t.Name() + "1")
-	AddBucket(&s3.Bucket{Name: &bucket0})
-	AddBucket(&s3.Bucket{Name: &bucket1})
+func TestCreateBucketRequest(t *testing.T) {
 	//Request a client
 	client, err := NewClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	//Create the request
-	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
+	bucketName := strings.ToLower(t.Name())
+	req := client.CreateBucketRequest(&s3.CreateBucketInput{
+		Bucket: &bucketName,
+	})
 	//Send the request
-	listBucketsOutput, err := req.Send(context.Background())
+	createBucketsOutput, err := req.Send(context.Background())
 	//Assert the result
 	assert.NoError(t, err)
-	assert.Equal(t, l+2, len(listBucketsOutput.Buckets))
+	bucketGet := GetBucket(&bucketName)
+	assert.NotNil(t, bucketGet)
+	assert.Equal(t, bucketName, *bucketGet.Name)
+	assert.Equal(t, bucketName, *createBucketsOutput.Location)
+	assert.NotNil(t, bucketGet.CreationDate)
 }
