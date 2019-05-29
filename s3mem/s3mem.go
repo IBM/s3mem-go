@@ -184,11 +184,6 @@ func (c *S3Mem) DeleteObjectTaggingRequest(*s3.DeleteObjectTaggingInput) s3.Dele
 	return s3.DeleteObjectTaggingRequest{}
 }
 
-func (c *S3Mem) DeleteObjectsRequest(*s3.DeleteObjectsInput) s3.DeleteObjectsRequest {
-	panic("Not implemented")
-	return s3.DeleteObjectsRequest{}
-}
-
 func (c *S3Mem) DeletePublicAccessBlockRequest(*s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest {
 	panic("Not implemented")
 	return s3.DeletePublicAccessBlockRequest{}
