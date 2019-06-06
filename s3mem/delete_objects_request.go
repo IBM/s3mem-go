@@ -12,8 +12,9 @@
 package s3mem
 
 import (
-	"errors"
 	"net/http"
+
+	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -23,18 +24,45 @@ func (c *S3Mem) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObje
 	if input == nil {
 		input = &s3.DeleteObjectsInput{}
 	}
-	output := &s3.DeleteObjectsOutput{}
+	output := &s3.DeleteObjectsOutput{
+		Deleted: make([]s3.DeletedObject, 0),
+		Errors:  make([]s3.Error, 0),
+	}
 	req := &aws.Request{
+		Params:      input,
 		Data:        output,
 		HTTPRequest: &http.Request{},
 	}
-	if _, ok := S3MemObjects.Objects[*input.Bucket]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchBucket)
-		return s3.DeleteObjectsRequest{Request: req, Input: input, Copy: c.DeleteObjectsRequest}
-	}
-	for _, obj := range input.Delete.Objects {
-		delete(S3MemObjects.Objects[*input.Bucket][*obj.Key], "1")
-		delete(S3MemObjects.Objects[*input.Bucket], *obj.Key)
-	}
+	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: deleteObjectsBucketExists}
+	req.Handlers.Send.PushBackNamed(bucketExists)
+	deleteObjects := aws.NamedHandler{Name: "S3MemDeleteObjects", Fn: deleteObjects}
+	req.Handlers.Send.PushBackNamed(deleteObjects)
 	return s3.DeleteObjectsRequest{Request: req, Input: input, Copy: c.DeleteObjectsRequest}
+}
+
+func deleteObjectsBucketExists(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	if !IsBucketExist(req.Params.(*s3.DeleteObjectsInput).Bucket) {
+		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.DeleteObjectsInput).Bucket, nil, nil)
+	}
+}
+
+func deleteObjects(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	for _, obj := range req.Params.(*s3.DeleteObjectsInput).Delete.Objects {
+		deleteMarker, err := DeleteObject(req.Params.(*s3.DeleteObjectsInput).Bucket, obj.Key, obj.VersionId)
+		if err != nil {
+			req.Data.(*s3.DeleteObjectsOutput).Errors = append(req.Data.(*s3.DeleteObjectsOutput).Errors, err.Convert2S3Error(obj.Key, obj.VersionId))
+		}
+		req.Data.(*s3.DeleteObjectsOutput).Deleted = append(req.Data.(*s3.DeleteObjectsOutput).Deleted, s3.DeletedObject{
+			DeleteMarker:          deleteMarker,
+			DeleteMarkerVersionId: obj.VersionId,
+			VersionId:             obj.VersionId,
+			Key:                   obj.Key,
+		})
+	}
 }
