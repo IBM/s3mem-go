@@ -12,11 +12,11 @@
 package s3mem
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
 func (c *S3Mem) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest {
@@ -25,12 +25,40 @@ func (c *S3Mem) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucket
 	}
 	output := &s3.DeleteBucketOutput{}
 	req := &aws.Request{
+		Params:      input,
 		Data:        output,
 		HTTPRequest: &http.Request{},
 	}
-	if _, ok := S3MemBuckets.Buckets[*input.Bucket]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchBucket)
-	}
-	delete(S3MemBuckets.Buckets, *input.Bucket)
+	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: deleteBucketBucketExists}
+	req.Handlers.Send.PushBackNamed(bucketExists)
+	bucketIsEmpty := aws.NamedHandler{Name: "S3MemBucketIsEmpty", Fn: deleteBucketBucketIsEmpty}
+	req.Handlers.Send.PushBackNamed(bucketIsEmpty)
+	deleteBucket := aws.NamedHandler{Name: "S3MemDeleteBucket", Fn: deleteBucket}
+	req.Handlers.Send.PushBackNamed(deleteBucket)
 	return s3.DeleteBucketRequest{Request: req, Input: input, Copy: c.DeleteBucketRequest}
+}
+
+func deleteBucketBucketExists(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	if !IsBucketExist(req.Params.(*s3.DeleteBucketInput).Bucket) {
+		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.DeleteBucketInput).Bucket, nil, nil)
+	}
+}
+
+func deleteBucketBucketIsEmpty(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	if !IsBucketEmpty(req.Params.(*s3.DeleteBucketInput).Bucket) {
+		req.Error = s3memerr.NewError(s3memerr.ErrCodeBucketNotEmpty, "", nil, req.Params.(*s3.DeleteBucketInput).Bucket, nil, nil)
+	}
+}
+
+func deleteBucket(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	DeleteBucket(req.Params.(*s3.DeleteBucketInput).Bucket)
 }

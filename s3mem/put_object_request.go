@@ -12,11 +12,11 @@
 package s3mem
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
 func (c *S3Mem) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
@@ -25,13 +25,32 @@ func (c *S3Mem) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
 	}
 	output := &s3.PutObjectOutput{}
 	req := &aws.Request{
+		Params:      input,
 		Data:        output,
 		HTTPRequest: &http.Request{},
 	}
-	_, err := AddObject(input.Bucket, input.Key, input.Body)
-	if err != nil {
-		req.Error = errors.New(s3.ErrCodeNoSuchUpload)
-		return s3.PutObjectRequest{Request: req, Input: input, Copy: c.PutObjectRequest}
-	}
+	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: putObjectBucketExists}
+	req.Handlers.Send.PushBackNamed(bucketExists)
+	putObject := aws.NamedHandler{Name: "S3MemPutObject", Fn: putObject}
+	req.Handlers.Send.PushBackNamed(putObject)
 	return s3.PutObjectRequest{Request: req, Input: input, Copy: c.PutObjectRequest}
+}
+
+func putObjectBucketExists(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	if !IsBucketExist(req.Params.(*s3.PutObjectInput).Bucket) {
+		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.PutObjectInput).Bucket, nil, nil)
+	}
+}
+
+func putObject(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	_, err := PutObject(req.Params.(*s3.PutObjectInput).Bucket, req.Params.(*s3.PutObjectInput).Key, req.Params.(*s3.PutObjectInput).Body)
+	if err != nil {
+		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchUpload, "", nil, req.Params.(*s3.PutObjectInput).Bucket, req.Params.(*s3.PutObjectInput).Key, nil)
+	}
 }
