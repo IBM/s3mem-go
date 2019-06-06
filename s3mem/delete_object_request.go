@@ -52,7 +52,7 @@ func deleteObjectObjectExists(req *aws.Request) {
 		return
 	}
 	if !IsObjectExist(req.Params.(*s3.DeleteObjectInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key) {
-		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, req.Params.(*s3.DeleteObjectsInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key, req.Params.(*s3.DeleteObjectInput).VersionId)
+		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, req.Params.(*s3.DeleteObjectInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key, req.Params.(*s3.DeleteObjectInput).VersionId)
 	}
 }
 
@@ -60,10 +60,11 @@ func deleteObject(req *aws.Request) {
 	if req.Error != nil {
 		return
 	}
-	deleteMarker, err := DeleteObject(req.Params.(*s3.DeleteObjectInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key, req.Params.(*s3.DeleteObjectInput).VersionId)
+	deleteMarker, versionID, err := DeleteObject(req.Params.(*s3.DeleteObjectInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key, req.Params.(*s3.DeleteObjectInput).VersionId)
 	if err != nil {
 		req.Error = err
 		return
 	}
 	req.Data.(*s3.DeleteObjectOutput).DeleteMarker = deleteMarker
+	req.Data.(*s3.DeleteObjectOutput).VersionId = versionID
 }

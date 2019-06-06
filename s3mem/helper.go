@@ -141,12 +141,12 @@ func GetObject(bucket *string, key *string, versionIDS *string) (object *Object,
 	return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, nil)
 }
 
-func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarkerOut *bool, err s3memerr.S3MemError) {
+func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarkerOut *bool, deleteMarkerVersionIDOut *string, err s3memerr.S3MemError) {
 	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
-		return nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", err, bucket, key, versionIDS)
+		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", err, bucket, key, versionIDS)
 	}
 	if _, ok := S3MemBuckets.Buckets[*bucket].Objects[*key]; !ok {
-		return nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, versionIDS)
+		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, versionIDS)
 	}
 	l := len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects)
 	if l > 0 {
@@ -157,9 +157,15 @@ func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarker
 				//if version provided then remove specific version
 				versionID, err := strconv.Atoi(*versionIDS)
 				if err != nil {
-					return nil, s3memerr.NewError(s3memerr.ErrCodeNoSuchVersion, "Version not a number", err, bucket, key, versionIDS)
+					return nil, nil, s3memerr.NewError(s3memerr.ErrCodeNoSuchVersion, "Version not a number", err, bucket, key, versionIDS)
 				}
-				S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:versionID], S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[versionID+1:]...)
+				log.Printf("VersionID: %s", *versionIDS)
+				log.Printf("l: %d", l)
+				if l-1 == versionID {
+					S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:l-1]
+				} else {
+					S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:versionID], S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[versionID+1:]...)
+				}
 			} else {
 				//if version not provided then add a marker object for the same version with no data
 				deleteMarker = false
@@ -173,6 +179,9 @@ func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarker
 					},
 				}
 				S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, deletedObject)
+				deleteMarkerVersionID := strconv.Itoa(len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) - 1)
+				deleteMarkerVersionIDOut = &deleteMarkerVersionID
+				deletedObject.DeletedObject.DeleteMarkerVersionId = deleteMarkerVersionIDOut
 			}
 			deleteMarkerOut = &deleteMarker
 		} else {
@@ -182,7 +191,7 @@ func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarker
 	if len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) == 0 {
 		delete(S3MemBuckets.Buckets[*bucket].Objects, *key)
 	}
-	return deleteMarkerOut, nil
+	return deleteMarkerOut, deleteMarkerVersionIDOut, nil
 }
 
 func PutBucketVersioning(bucket *string, mfa *string, versioningConfiguration *s3.VersioningConfiguration) error {
