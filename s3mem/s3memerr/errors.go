@@ -66,9 +66,12 @@ func NewError(code, message string, origErr error, bucket, key, versionId *strin
 
 func (errf errorFactory) NewError(code, message string, origErr error, bucket, key, versionId *string) S3MemError {
 	return &s3memError{
-		code:    code,
-		message: message,
-		origErr: origErr,
+		code:      code,
+		message:   message,
+		origErr:   origErr,
+		bucket:    bucket,
+		key:       key,
+		versionId: versionId,
 	}
 }
 
