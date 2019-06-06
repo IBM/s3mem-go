@@ -27,14 +27,14 @@ func TestListObjectssRequest(t *testing.T) {
 
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	AddBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey1 := "1-my-object"
 	content1 := "test content 1"
-	AddObject(&bucketName, &objectKey1, strings.NewReader(string(content1)))
+	PutObject(&bucketName, &objectKey1, strings.NewReader(string(content1)))
 	objectKey2 := "2-my-object"
 	content2 := "test content 2"
-	AddObject(&bucketName, &objectKey2, strings.NewReader(string(content2)))
+	PutObject(&bucketName, &objectKey2, strings.NewReader(string(content2)))
 
 	//Request a client
 	client, err := NewClient()
