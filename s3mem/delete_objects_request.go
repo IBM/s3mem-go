@@ -54,13 +54,13 @@ func deleteObjects(req *aws.Request) {
 		return
 	}
 	for _, obj := range req.Params.(*s3.DeleteObjectsInput).Delete.Objects {
-		deleteMarker, err := DeleteObject(req.Params.(*s3.DeleteObjectsInput).Bucket, obj.Key, obj.VersionId)
+		deleteMarker, versionID, err := DeleteObject(req.Params.(*s3.DeleteObjectsInput).Bucket, obj.Key, obj.VersionId)
 		if err != nil {
 			req.Data.(*s3.DeleteObjectsOutput).Errors = append(req.Data.(*s3.DeleteObjectsOutput).Errors, err.Convert2S3Error(obj.Key, obj.VersionId))
 		}
 		req.Data.(*s3.DeleteObjectsOutput).Deleted = append(req.Data.(*s3.DeleteObjectsOutput).Deleted, s3.DeletedObject{
 			DeleteMarker:          deleteMarker,
-			DeleteMarkerVersionId: obj.VersionId,
+			DeleteMarkerVersionId: versionID,
 			VersionId:             obj.VersionId,
 			Key:                   obj.Key,
 		})
