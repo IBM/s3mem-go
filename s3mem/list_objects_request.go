@@ -12,12 +12,12 @@
 package s3mem
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
 func (c *S3Mem) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsRequest {
@@ -27,23 +27,41 @@ func (c *S3Mem) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsReq
 	output := &s3.ListObjectsOutput{}
 	operation := &aws.Operation{}
 	req := &aws.Request{
+		Params:      input,
 		Data:        output,
 		Operation:   operation,
 		HTTPRequest: &http.Request{},
 	}
-	if _, ok := S3MemBuckets.Buckets[*input.Bucket]; !ok {
-		req.Error = errors.New(s3.ErrCodeNoSuchBucket)
+	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: listObjectsBucketExists}
+	req.Handlers.Send.PushBackNamed(bucketExists)
+	listObjects := aws.NamedHandler{Name: "S3MemListObjects", Fn: listObjects}
+	req.Handlers.Send.PushBackNamed(listObjects)
+	return s3.ListObjectsRequest{Request: req, Input: input, Copy: c.ListObjectsRequest}
+}
+
+func listObjectsBucketExists(req *aws.Request) {
+	if req.Error != nil {
+		return
 	}
-	v := make([]s3.Object, 0)
-	for _, obj := range S3MemObjects.Objects[*input.Bucket] {
-		if input.Prefix != nil {
-			if strings.HasPrefix(*obj["1"].Object.Key, *input.Prefix) {
-				v = append(v, *obj["1"].Object)
+	if !IsBucketExist(req.Params.(*s3.ListObjectsInput).Bucket) {
+		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.ListObjectsInput).Bucket, nil, nil)
+	}
+}
+
+func listObjects(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	req.Data.(*s3.ListObjectsOutput).Contents = make([]s3.Object, 0)
+	bucket := req.Params.(*s3.ListObjectsInput).Bucket
+	prefix := req.Params.(*s3.ListObjectsInput).Prefix
+	for _, obj := range S3MemBuckets.Buckets[*bucket].Objects {
+		if prefix != nil {
+			if strings.HasPrefix(*obj.VersionedObjects[0].Object.Key, *prefix) {
+				req.Data.(*s3.ListObjectsOutput).Contents = append(req.Data.(*s3.ListObjectsOutput).Contents, *obj.VersionedObjects[0].Object)
 			}
 		} else {
-			v = append(v, *obj["1"].Object)
+			req.Data.(*s3.ListObjectsOutput).Contents = append(req.Data.(*s3.ListObjectsOutput).Contents, *obj.VersionedObjects[0].Object)
 		}
 	}
-	output.Contents = v
-	return s3.ListObjectsRequest{Request: req, Input: input, Copy: c.ListObjectsRequest}
 }

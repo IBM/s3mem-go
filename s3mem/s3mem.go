@@ -13,95 +13,16 @@ package s3mem
 
 import (
 	"context"
-	"errors"
-	"io"
-	"io/ioutil"
-	"sync"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/s3iface"
 )
 
-type S3Mem struct {
-}
-
-type Buckets struct {
-	Buckets map[string]*s3.Bucket
-	Mux     sync.Mutex
-}
-
-//(bucket/key/version)
-type Objects struct {
-	Objects map[string]map[string]map[string]*Object
-	Mux     sync.Mutex
-}
-
-type Object struct {
-	Object  *s3.Object
-	Content []byte
-}
-
 var S3MemBuckets Buckets
-var S3MemObjects Objects
 
 func init() {
-	S3MemBuckets.Buckets = make(map[string]*s3.Bucket, 0)
-	S3MemObjects.Objects = make(map[string]map[string]map[string]*Object, 0)
-}
-
-//Clear clears memory buckets and objects
-func Clear() {
-	S3MemBuckets.Buckets = make(map[string]*s3.Bucket, 0)
-	S3MemObjects.Objects = make(map[string]map[string]map[string]*Object, 0)
-}
-
-//GetBucket gets a bucket from memory
-func GetBucket(bucket *string) *s3.Bucket {
-	return S3MemBuckets.Buckets[*bucket]
-}
-
-//AddBucket adds a bucket in memory
-func AddBucket(b *s3.Bucket) {
-	S3MemBuckets.Buckets[*b.Name] = b
-}
-
-//DeleteBucket deletes an object from memory
-func DeleteBucket(b *s3.Bucket) {
-	delete(S3MemBuckets.Buckets, *b.Name)
-}
-
-//AddObject adds an object in memory
-func AddObject(bucket *string, key *string, body io.ReadSeeker) (*Object, error) {
-	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
-		return nil, errors.New(s3.ErrCodeNoSuchBucket)
-	}
-	if _, ok := S3MemObjects.Objects[*bucket]; !ok {
-		S3MemObjects.Objects[*bucket] = make(map[string]map[string]*Object, 0)
-	}
-	if _, ok := S3MemObjects.Objects[*bucket][*key]; !ok {
-		S3MemObjects.Objects[*bucket][*key] = make(map[string]*Object, 0)
-	}
-	tc := time.Now()
-	content, err := ioutil.ReadAll(body)
-	if err != nil {
-		return nil, errors.New(s3.ErrCodeNoSuchUpload)
-	}
-	S3MemObjects.Objects[*bucket][*key]["1"] = &Object{
-		Object: &s3.Object{
-			Key:          key,
-			LastModified: &tc,
-			StorageClass: "memory",
-		},
-		Content: content,
-	}
-	return S3MemObjects.Objects[*bucket][*key]["1"], nil
-}
-
-//GetObject gets an object from memory
-func GetObject(bucket *string, key *string) *Object {
-	return S3MemObjects.Objects[*bucket][*key]["1"]
+	S3MemBuckets.Buckets = make(map[string]*Bucket, 0)
 }
 
 //NewClient creates a new client
@@ -279,11 +200,6 @@ func (c *S3Mem) GetBucketTaggingRequest(*s3.GetBucketTaggingInput) s3.GetBucketT
 	return s3.GetBucketTaggingRequest{}
 }
 
-func (c *S3Mem) GetBucketVersioningRequest(*s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-	panic("Not implemented")
-	return s3.GetBucketVersioningRequest{}
-}
-
 func (c *S3Mem) GetBucketWebsiteRequest(*s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
 	panic("Not implemented")
 	return s3.GetBucketWebsiteRequest{}
@@ -447,11 +363,6 @@ func (c *S3Mem) PutBucketRequestPaymentRequest(*s3.PutBucketRequestPaymentInput)
 func (c *S3Mem) PutBucketTaggingRequest(*s3.PutBucketTaggingInput) s3.PutBucketTaggingRequest {
 	panic("Not implemented")
 	return s3.PutBucketTaggingRequest{}
-}
-
-func (c *S3Mem) PutBucketVersioningRequest(*s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-	panic("Not implemented")
-	return s3.PutBucketVersioningRequest{}
 }
 
 func (c *S3Mem) PutBucketWebsiteRequest(*s3.PutBucketWebsiteInput) s3.PutBucketWebsiteRequest {

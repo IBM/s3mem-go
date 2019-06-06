@@ -22,16 +22,23 @@ func (c *S3Mem) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsReq
 	if input == nil {
 		input = &s3.ListBucketsInput{}
 	}
-	v := make([]s3.Bucket, 0)
-	for _, value := range S3MemBuckets.Buckets {
-		v = append(v, *value)
-	}
-	output := &s3.ListBucketsOutput{
-		Buckets: v,
-	}
+	output := &s3.ListBucketsOutput{}
 	req := &aws.Request{
+		Params:      input,
 		Data:        output,
 		HTTPRequest: &http.Request{},
 	}
+	listBuckets := aws.NamedHandler{Name: "S3MemListBuckets", Fn: listBuckets}
+	req.Handlers.Send.PushBackNamed(listBuckets)
 	return s3.ListBucketsRequest{Request: req, Input: input, Copy: c.ListBucketsRequest}
+}
+
+func listBuckets(req *aws.Request) {
+	if req.Error != nil {
+		return
+	}
+	req.Data.(*s3.ListBucketsOutput).Buckets = make([]s3.Bucket, 0)
+	for _, value := range S3MemBuckets.Buckets {
+		req.Data.(*s3.ListBucketsOutput).Buckets = append(req.Data.(*s3.ListBucketsOutput).Buckets, *value.Bucket)
+	}
 }
