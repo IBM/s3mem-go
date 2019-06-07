@@ -16,6 +16,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,9 +34,7 @@ func TestGetBucketVersioningRequest(t *testing.T) {
 		Status:    s3.BucketVersioningStatusEnabled,
 	})
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New(aws.Config{})
 
 	//Create request
 	req := client.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{

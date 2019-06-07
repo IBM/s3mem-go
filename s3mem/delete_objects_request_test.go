@@ -16,6 +16,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
@@ -32,9 +33,7 @@ func TestDeleteObjectsRequest(t *testing.T) {
 	objectKey2 := "my-object2"
 	PutObject(&bucketName, &objectKey2, strings.NewReader(string("test contents")))
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New(aws.Config{})
 	versionId := "1"
 	//Create the request
 	req := client.DeleteObjectsRequest(&s3.DeleteObjectsInput{
@@ -47,7 +46,7 @@ func TestDeleteObjectsRequest(t *testing.T) {
 		},
 	})
 	//Send the request
-	_, err = req.Send(context.Background())
+	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
 	object1, _, err := GetObject(&bucketName, &objectKey1, nil)
 	assert.Error(t, err)
@@ -65,9 +64,7 @@ func TestDeleteObjectsRequestBucketNotExists(t *testing.T) {
 	objectKey1 := "my-object1"
 	PutObject(&bucketName, &objectKey1, strings.NewReader(string("test contents")))
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New(aws.Config{})
 	versionId := "1"
 	nonExistBucketName := strings.ToLower(t.Name()) + "-1"
 	//Create the request
@@ -80,7 +77,7 @@ func TestDeleteObjectsRequestBucketNotExists(t *testing.T) {
 		},
 	})
 	//Send the request
-	_, err = req.Send(context.Background())
+	_, err := req.Send(context.Background())
 	assert.Error(t, err)
 	assert.Implements(t, (*s3memerr.S3MemError)(nil), err)
 	assert.Equal(t, s3.ErrCodeNoSuchBucket, err.(s3memerr.S3MemError).Code())
