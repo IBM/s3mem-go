@@ -37,9 +37,7 @@ func TestListObjectssRequest(t *testing.T) {
 	PutObject(&bucketName, &objectKey2, strings.NewReader(string(content2)))
 
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.ListObjectsRequest(&s3.ListObjectsInput{
 		Bucket: &bucketName,

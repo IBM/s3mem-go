@@ -9,34 +9,30 @@
 ###############################################################################
 */
 
-package s3mem
+package example
 
 import (
-	"sync"
+	"bytes"
+	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/s3iface"
 )
 
-type Buckets struct {
-	Buckets map[string]*Bucket
-	Mux     sync.Mutex
-}
-
-//(bucket/key/version)
-type Bucket struct {
-	Bucket                  *s3.Bucket
-	MFA                     *string
-	VersioningConfiguration *s3.VersioningConfiguration
-	Objects                 map[string]*VersionedObjects
-	Mux                     sync.Mutex
-}
-
-type VersionedObjects struct {
-	VersionedObjects []*Object
-}
-
-type Object struct {
-	Object        *s3.Object
-	DeletedObject *s3.DeletedObject
-	Content       []byte
+func GetObject(client s3iface.S3API, bucket *string, key *string) ([]byte, error) {
+	//Create a request
+	req := client.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: bucket,
+		Key:    key,
+	})
+	//Send the request
+	getObjectOutput, err := req.Send(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	//Read body
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(getObjectOutput.Body)
+	newBytes := buf.Bytes()
+	return newBytes, nil
 }

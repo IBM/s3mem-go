@@ -19,6 +19,7 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
+//GetBucketVersioningRequest ...
 func (c *S3Mem) GetBucketVersioningRequest(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
 	if input == nil {
 		input = &s3.GetBucketVersioningInput{}

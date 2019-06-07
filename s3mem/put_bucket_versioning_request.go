@@ -19,6 +19,7 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
+//PutBucketVersioningRequest ...
 func (c *S3Mem) PutBucketVersioningRequest(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
 	if input == nil {
 		input = &s3.PutBucketVersioningInput{}

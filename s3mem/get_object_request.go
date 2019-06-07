@@ -21,6 +21,7 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
+//GetObjectRequest ...
 func (c *S3Mem) GetObjectRequest(input *s3.GetObjectInput) s3.GetObjectRequest {
 	if input == nil {
 		input = &s3.GetObjectInput{}

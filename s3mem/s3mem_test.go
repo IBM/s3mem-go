@@ -12,6 +12,7 @@
 package s3mem
 
 import (
+	"context"
 	"testing"
 
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
@@ -20,11 +21,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewClient(t *testing.T) {
+	S3MemBuckets.Mux.Lock()
+	defer S3MemBuckets.Mux.Unlock()
+	l := len(S3MemBuckets.Buckets)
+	client := New()
+	//Create the request
+	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
+	//Send the request
+	listBucketsOutput, err := req.Send(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, l, len(listBucketsOutput.Buckets))
+}
+
 func TestNotImplemented(t *testing.T) {
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	input := &s3.AbortMultipartUploadInput{}
 	req := client.AbortMultipartUploadRequest(input)
 	assert.Error(t, req.Error)

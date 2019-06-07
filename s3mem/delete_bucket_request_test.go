@@ -26,15 +26,13 @@ func TestDeleteBucketRequest(t *testing.T) {
 	bucketName := strings.ToLower(t.Name())
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.DeleteBucketRequest(&s3.DeleteBucketInput{
 		Bucket: &bucketName,
 	})
 	//Send the request
-	_, err = req.Send(context.Background())
+	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
 	bucketGet := GetBucket(&bucketName)
 	assert.Nil(t, bucketGet)
@@ -47,15 +45,13 @@ func TestDeleteNotEmptyBucket(t *testing.T) {
 	objectKey := "my-object"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.DeleteBucketRequest(&s3.DeleteBucketInput{
 		Bucket: &bucketName,
 	})
 	//Send the request
-	_, err = req.Send(context.Background())
+	_, err := req.Send(context.Background())
 	assert.Error(t, err)
 	assert.Implements(t, (*s3memerr.S3MemError)(nil), err)
 	assert.Equal(t, s3memerr.ErrCodeBucketNotEmpty, err.(s3memerr.S3MemError).Code())

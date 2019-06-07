@@ -33,9 +33,7 @@ func TestGetBucketVersioningRequest(t *testing.T) {
 		Status:    s3.BucketVersioningStatusEnabled,
 	})
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 
 	//Create request
 	req := client.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{

@@ -19,6 +19,7 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
+//PutObjectRequest ...
 func (c *S3Mem) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
 	if input == nil {
 		input = &s3.PutObjectInput{}
