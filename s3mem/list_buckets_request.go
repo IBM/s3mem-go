@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+//ListBucketsRequest ...
 func (c *S3Mem) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsRequest {
 	if input == nil {
 		input = &s3.ListBucketsInput{}

@@ -8,36 +8,13 @@ A panic() is raised if you reach a non-implemented API.
 
 ## Usage
 
-There is two ways to create a s3mem client.
-
-- Calling the `s3mem.NewClient()` method. It returns a *s3mem.S3Mem client for the s3mem in-memory implementation and you can use it as client for the AWS S3 methods.
-- Calling the `s3mem.New(cfg aws.Config) method. If the endpoint used to create the config is "s3mem" then it returns a client for the s3mem in-memory implementation otherwize a AWS *s3.S3 client.
+To get a client call the `s3mem.New()` method. It returns a s3iface.S3API client for the s3mem in-memory implementation and you can use it as client for the AWS S3 methods.
 
 ## Examples
 
-    ```
-    func TestListBucketsRequest(t *testing.T) {
-        //Need to lock for testing as tests are running concurrently
-        //and meanwhile another running test could change the stored buckets
-        S3MemBuckets.Mux.Lock()
-        defer S3MemBuckets.Mux.Unlock()
+    As example here a method which retrieves an object from an S3 implementation [Example](example/example.go) and here how to write a test for it [Example](example/example_test.go) using s3mem.
+    The s3m3m package offers a number of helper method to manage the buckets and objects without using the S3API. This is useful to setup your tests. You can find them in the [Helper methods][s3mem/helper.go]
 
-        //Adding bucket directly in mem to prepare the test.
-        bucket0 := strings.ToLower(t.Name() + "0")
-        bucket1 := strings.ToLower(t.Name() + "1")
-        AddBucket(&s3.Bucket{Name: &bucket0})
-        AddBucket(&s3.Bucket{Name: &bucket1})
-        //Request a client
-        client := NewClient()
-        //Create the request
-        req := client.ListBucketsRequest(&s3.ListBucketsInput{})
-        //Send the request
-        listBucketsOutput, err := req.Send(context.Background())
-        //Assert the result
-        assert.NoError(t, err)
-        assert.Equal(t, 2, len(listBucketsOutput.Buckets))
-    }
-    ```
 
 ## Implemented
 
