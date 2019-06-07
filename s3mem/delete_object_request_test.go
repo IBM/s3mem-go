@@ -16,7 +16,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
@@ -29,7 +28,7 @@ func TestDeleteObjectRequest(t *testing.T) {
 	objectKey := "my-object"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	//Create the request
 	req := client.DeleteObjectRequest(&s3.DeleteObjectInput{
 		Bucket: &bucketName,
@@ -56,7 +55,7 @@ func TestDeleteObjectRequestBucketVersionedThenRestore(t *testing.T) {
 	content := "test content"
 	PutObject(&bucketName, &objectKey, strings.NewReader(content))
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	//Create the request
 	req := client.DeleteObjectRequest(&s3.DeleteObjectInput{
 		Bucket: &bucketName,

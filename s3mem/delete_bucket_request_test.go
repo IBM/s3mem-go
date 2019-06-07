@@ -16,7 +16,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
@@ -27,7 +26,7 @@ func TestDeleteBucketRequest(t *testing.T) {
 	bucketName := strings.ToLower(t.Name())
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	//Create the request
 	req := client.DeleteBucketRequest(&s3.DeleteBucketInput{
 		Bucket: &bucketName,
@@ -46,7 +45,7 @@ func TestDeleteNotEmptyBucket(t *testing.T) {
 	objectKey := "my-object"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	//Create the request
 	req := client.DeleteBucketRequest(&s3.DeleteBucketInput{
 		Bucket: &bucketName,

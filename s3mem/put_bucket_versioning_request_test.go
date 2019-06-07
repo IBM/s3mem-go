@@ -16,7 +16,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +26,7 @@ func TestPutBucketVersioningRequestMFAString(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -49,7 +48,7 @@ func TestPutBucketVersioningRequestMFAEnable(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -75,7 +74,7 @@ func TestPutBucketVersioningRequestMFADisabled(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -100,7 +99,7 @@ func TestPutBucketVersioningRequestStatusEnabled(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -125,7 +124,7 @@ func TestPutBucketVersioningRequestStatusSuspended(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,

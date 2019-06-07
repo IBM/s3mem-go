@@ -16,7 +16,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
@@ -24,7 +23,7 @@ import (
 
 func TestCreateBucketRequest(t *testing.T) {
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	//Create the request
 	bucketName := strings.ToLower(t.Name())
 	req := client.CreateBucketRequest(&s3.CreateBucketInput{
@@ -43,7 +42,7 @@ func TestCreateBucketRequest(t *testing.T) {
 
 func TestCreateBucketRequestBucketAlreadyExists(t *testing.T) {
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	//Create the request
 	bucketName := strings.ToLower(t.Name())
 	req := client.CreateBucketRequest(&s3.CreateBucketInput{

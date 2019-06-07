@@ -15,7 +15,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +37,7 @@ func TestListObjectssRequest(t *testing.T) {
 	PutObject(&bucketName, &objectKey2, strings.NewReader(string(content2)))
 
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	//Create the request
 	req := client.ListObjectsRequest(&s3.ListObjectsInput{
 		Bucket: &bucketName,
