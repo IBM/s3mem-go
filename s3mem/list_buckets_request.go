@@ -30,7 +30,7 @@ func (c *S3Mem) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsReq
 	}
 	listBuckets := aws.NamedHandler{Name: "S3MemListBuckets", Fn: listBuckets}
 	req.Handlers.Send.PushBackNamed(listBuckets)
-	return s3.ListBucketsRequest{Request: req, Input: input}
+	return s3.ListBucketsRequest{Request: req, Input: input, Copy: c.ListBucketsRequest}
 }
 
 func listBuckets(req *aws.Request) {
