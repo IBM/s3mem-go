@@ -37,7 +37,7 @@ func (c *S3Mem) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObje
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	deleteObjects := aws.NamedHandler{Name: "S3MemDeleteObjects", Fn: deleteObjects}
 	req.Handlers.Send.PushBackNamed(deleteObjects)
-	return s3.DeleteObjectsRequest{Request: req, Input: input, Copy: c.DeleteObjectsRequest}
+	return s3.DeleteObjectsRequest{Request: req, Input: input}
 }
 
 func deleteObjectsBucketExists(req *aws.Request) {

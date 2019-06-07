@@ -37,7 +37,7 @@ func (c *S3Mem) CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucket
 	req.Handlers.Send.PushBackNamed(createBucketNameValidate)
 	addBucketNameSend := aws.NamedHandler{Name: "S3MemCreateBucketNameSend", Fn: createBucket}
 	req.Handlers.Send.PushBackNamed(addBucketNameSend)
-	return s3.CreateBucketRequest{Request: req, Input: input, Copy: c.CreateBucketRequest}
+	return s3.CreateBucketRequest{Request: req, Input: input}
 }
 
 func createBucketBucketExists(req *aws.Request) {

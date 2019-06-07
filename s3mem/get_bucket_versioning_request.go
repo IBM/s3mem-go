@@ -33,7 +33,7 @@ func (c *S3Mem) GetBucketVersioningRequest(input *s3.GetBucketVersioningInput) s
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	getBucketVersioning := aws.NamedHandler{Name: "S3MemGetBucketVersioning", Fn: getBucketVersioning}
 	req.Handlers.Send.PushBackNamed(getBucketVersioning)
-	return s3.GetBucketVersioningRequest{Request: req, Input: input, Copy: c.GetBucketVersioningRequest}
+	return s3.GetBucketVersioningRequest{Request: req, Input: input}
 }
 
 func getBucketVersioningBucketExists(req *aws.Request) {

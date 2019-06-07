@@ -22,7 +22,8 @@ const (
 	ErrCodeBucketNotEmpty                          = "BucketNotEmpty"
 	ErrCodeBucketAlreadyExists                     = "BucketAlreadyExists"
 	ErrCodeIllegalVersioningConfigurationException = "IllegalVersioningConfigurationException"
-	ErrCodeNoSuchVersion                           = "ErrCodeNoSuchVersion"
+	ErrCodeNoSuchVersion                           = "NoSuchVersion"
+	ErrCodeNotImplemented                          = "NotImplemented"
 )
 
 // Factory interface for creating Error instances.
