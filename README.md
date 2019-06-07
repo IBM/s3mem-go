@@ -12,8 +12,8 @@ To get a client call the `s3mem.New()` method. It returns a s3iface.S3API client
 
 ## Examples
 
-As example here a method which retrieves an object from an S3 implementation [Example](example/example.go) and here how to write a test for it [Example](example/example_test.go) using s3mem.
-The s3m3m package offers a number of helper method to manage the buckets and objects without using the S3API. This is useful to setup your tests. You can find them in the [Helper methods][s3mem/helper.go]
+As example here a method which retrieves an object from an S3 implementation [Example](example/example.go) and here how to write a test for it [Example Test](example/example_test.go) using s3mem.
+The s3m3m package offers a number of helper method to manage the buckets and objects without using the S3API. This is useful to setup your tests. You can find them in the [Helper methods](s3mem/helper.go)
 
 
 ## Implemented
