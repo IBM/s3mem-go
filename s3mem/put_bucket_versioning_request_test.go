@@ -26,9 +26,7 @@ func TestPutBucketVersioningRequestMFAString(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -50,9 +48,7 @@ func TestPutBucketVersioningRequestMFAEnable(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -78,9 +74,7 @@ func TestPutBucketVersioningRequestMFADisabled(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -105,9 +99,7 @@ func TestPutBucketVersioningRequestStatusEnabled(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,
@@ -132,9 +124,7 @@ func TestPutBucketVersioningRequestStatusSuspended(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	mfa := "122334 13445"
 	req := client.PutBucketVersioningRequest(&s3.PutBucketVersioningInput{
 		Bucket: &bucketName,

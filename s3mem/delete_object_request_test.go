@@ -28,16 +28,14 @@ func TestDeleteObjectRequest(t *testing.T) {
 	objectKey := "my-object"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.DeleteObjectRequest(&s3.DeleteObjectInput{
 		Bucket: &bucketName,
 		Key:    &objectKey,
 	})
 	//Send the request
-	_, err = req.Send(context.Background())
+	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
 	object, _, err := GetObject(&bucketName, &objectKey, nil)
 	assert.Error(t, err)
@@ -57,9 +55,7 @@ func TestDeleteObjectRequestBucketVersionedThenRestore(t *testing.T) {
 	content := "test content"
 	PutObject(&bucketName, &objectKey, strings.NewReader(content))
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.DeleteObjectRequest(&s3.DeleteObjectInput{
 		Bucket: &bucketName,

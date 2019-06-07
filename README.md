@@ -1,40 +1,19 @@
 # s3mem
 s3mem is an in-memory S3API implementation. 
-It doesn't require any server or external executable.
-Useful for unit-testing as it doesn't require any external server.
+It doesn't require any server or external executable which is useful for unit-testing.
 It is a work in progess and only some APIs are implemented (Feel free to contribute)
-A panic() is raised if you reach a non-implemented API.
+
+## Usage
+
+To get a client call the `s3mem.New()` function. It returns a s3iface.S3API client for the s3mem in-memory implementation and you can use it as client for the AWS S3 methods.
+
+### Examples
+
+As example here a method which retrieves an object from an S3 implementation [Example](example/example.go) and here how to write a test for it [Example Test](example/example_test.go) using s3mem.
+The s3m3m package offers a number of helper functions to manage the buckets and objects without using the S3API. This is useful to setup your tests. You can find them in the [Helper functions](s3mem/helper.go)
 
 
-## Example
-
-    ```
-    func TestListBucketsRequest(t *testing.T) {
-        //Need to lock for testing as tests are running concurrently
-        //and meanwhile another running test could change the stored buckets
-        S3MemBuckets.Mux.Lock()
-        defer S3MemBuckets.Mux.Unlock()
-
-        //Adding bucket directly in mem to prepare the test.
-        bucket0 := strings.ToLower(t.Name() + "0")
-        bucket1 := strings.ToLower(t.Name() + "1")
-        AddBucket(&s3.Bucket{Name: &bucket0})
-        AddBucket(&s3.Bucket{Name: &bucket1})
-        //Request a client
-        client, err := NewClient()
-        assert.NoError(t, err)
-        assert.NotNil(t, client)
-        //Create the request
-        req := client.ListBucketsRequest(&s3.ListBucketsInput{})
-        //Send the request
-        listBucketsOutput, err := req.Send(context.Background())
-        //Assert the result
-        assert.NoError(t, err)
-        assert.Equal(t, 2, len(listBucketsOutput.Buckets))
-    }
-    ```
-
-## Implemented
+## Implemented mehtods
 
 ```
 CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest
@@ -49,7 +28,7 @@ PutBucketVersioningRequest(input *s3.PutBucketVersioningInput) s3.PutBucketVersi
 PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest
 ```
 
-## Not implemented
+## Not implemented methods
 
 ```
 AbortMultipartUploadRequest(*s3.AbortMultipartUploadInput) s3.AbortMultipartUploadRequest

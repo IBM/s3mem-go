@@ -28,9 +28,7 @@ func TestPutObjectRequest(t *testing.T) {
 	objectKey := "my-object"
 	content := "test content"
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.PutObjectRequest(&s3.PutObjectInput{
 		Bucket: &bucketName,
@@ -38,7 +36,7 @@ func TestPutObjectRequest(t *testing.T) {
 		Body:   strings.NewReader(string(content)),
 	})
 	//Send the request
-	_, err = req.Send(context.Background())
+	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
 
 	object, _, err := GetObject(&bucketName, &objectKey, nil)
@@ -60,9 +58,7 @@ func TestPutObjectRequestWithVersioningBucket(t *testing.T) {
 	objectKey := "my-object-1"
 	content1 := "test content 1"
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.PutObjectRequest(&s3.PutObjectInput{
 		Bucket: &bucketName,
@@ -70,7 +66,7 @@ func TestPutObjectRequestWithVersioningBucket(t *testing.T) {
 		Body:   strings.NewReader(string(content1)),
 	})
 	//Send the request
-	_, err = req.Send(context.Background())
+	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
 
 	object1, _, err := GetObject(&bucketName, &objectKey, nil)

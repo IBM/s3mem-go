@@ -30,9 +30,7 @@ func TestGetObjectRequest(t *testing.T) {
 	content := "test content"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string(content)))
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request
 	req := client.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: &bucketName,
@@ -65,9 +63,7 @@ func TestGetObjectRequestWithVersioningBucket(t *testing.T) {
 	content2 := "test content 2"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string(content2)))
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New()
 	//Create the request to get the last version
 	req := client.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: &bucketName,

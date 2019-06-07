@@ -35,11 +35,13 @@ func GetBucket(bucket *string) *s3.Bucket {
 	return S3MemBuckets.Buckets[*bucket].Bucket
 }
 
+//IsBucketExist returns true if bucket exists
 func IsBucketExist(bucket *string) bool {
 	_, ok := S3MemBuckets.Buckets[*bucket]
 	return ok
 }
 
+//IsBucketEmpty returns true if bucket is empty
 func IsBucketEmpty(bucket *string) bool {
 	return len(S3MemBuckets.Buckets[*bucket].Objects) == 0
 }
@@ -57,12 +59,14 @@ func DeleteBucket(bucket *string) {
 	delete(S3MemBuckets.Buckets, *bucket)
 }
 
+//IsObjectExist returns true if object exists
 func IsObjectExist(bucket *string, key *string) bool {
 	_, ok := S3MemBuckets.Buckets[*bucket].Objects[*key]
 	return ok
 }
 
-//PutObject adds an object in memory
+//PutObject adds an object in memory return the object.
+//Raise an error if a failure to read the body occurs
 func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, error) {
 	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
 		S3MemBuckets.Buckets[*bucket].Objects = make(map[string]*VersionedObjects, 0)
@@ -88,15 +92,14 @@ func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, error)
 	versioning := S3MemBuckets.Buckets[*bucket].VersioningConfiguration
 	if versioning != nil && versioning.Status == s3.BucketVersioningStatusEnabled {
 		S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
-		// versionId := strconv.Itoa(len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects - 1))
-		// obj.VersionedObjects[versionId].VersionId = &versionId
 	} else {
 		S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
 	}
 	return obj, nil
 }
 
-//GetObject gets an object from memory
+//GetObject gets an object from memory return the Object and its versionID
+//Raises an error the bucket or object doesn't exists or if the requested object is deleted,
 func GetObject(bucket *string, key *string, versionIDS *string) (object *Object, versionIDSOut *string, s3memerror s3memerr.S3MemError) {
 	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, bucket, key, versionIDS)
@@ -141,6 +144,7 @@ func GetObject(bucket *string, key *string, versionIDS *string) (object *Object,
 	return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, nil)
 }
 
+//DeleteObject Deletes an object
 func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarkerOut *bool, deleteMarkerVersionIDOut *string, err s3memerr.S3MemError) {
 	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", err, bucket, key, versionIDS)
@@ -194,12 +198,14 @@ func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarker
 	return deleteMarkerOut, deleteMarkerVersionIDOut, nil
 }
 
+//PutBucketVersioning Sets the bucket in versionning mode
 func PutBucketVersioning(bucket *string, mfa *string, versioningConfiguration *s3.VersioningConfiguration) error {
 	S3MemBuckets.Buckets[*bucket].MFA = mfa
 	S3MemBuckets.Buckets[*bucket].VersioningConfiguration = versioningConfiguration
 	return nil
 }
 
+//GetBucketVersioning gets the versioning configuration.
 func GetBucketVersioning(bucket *string) (*string, *s3.VersioningConfiguration) {
 	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
 		return nil, nil

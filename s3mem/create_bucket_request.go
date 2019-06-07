@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+//CreateBucketRequest ...
 func (c *S3Mem) CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest {
 	if input == nil {
 		input = &s3.CreateBucketInput{}
