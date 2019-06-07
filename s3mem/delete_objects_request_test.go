@@ -16,7 +16,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
@@ -33,7 +32,7 @@ func TestDeleteObjectsRequest(t *testing.T) {
 	objectKey2 := "my-object2"
 	PutObject(&bucketName, &objectKey2, strings.NewReader(string("test contents")))
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	versionId := "1"
 	//Create the request
 	req := client.DeleteObjectsRequest(&s3.DeleteObjectsInput{
@@ -64,7 +63,7 @@ func TestDeleteObjectsRequestBucketNotExists(t *testing.T) {
 	objectKey1 := "my-object1"
 	PutObject(&bucketName, &objectKey1, strings.NewReader(string("test contents")))
 	//Request a client
-	client := New(aws.Config{})
+	client := New()
 	versionId := "1"
 	nonExistBucketName := strings.ToLower(t.Name()) + "-1"
 	//Create the request

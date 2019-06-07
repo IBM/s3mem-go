@@ -24,7 +24,6 @@ import (
 const S3MemURL = "s3mem"
 
 type S3Mem struct {
-	*aws.Client
 }
 
 var S3MemBuckets Buckets
@@ -33,22 +32,8 @@ func init() {
 	S3MemBuckets.Buckets = make(map[string]*Bucket, 0)
 }
 
-func New(config aws.Config) s3iface.S3API {
-	var signingName string
-	signingRegion := config.Region
-
-	svc := &S3Mem{
-		Client: aws.NewClient(
-			config,
-			aws.Metadata{
-				ServiceName:   s3.ServiceName,
-				SigningName:   signingName,
-				SigningRegion: signingRegion,
-				APIVersion:    "2006-03-01",
-			},
-		),
-	}
-	return svc
+func New() s3iface.S3API {
+	return &S3Mem{}
 }
 
 func (c *S3Mem) NotImplemented() *aws.Request {
