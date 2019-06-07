@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+//DeleteObjectsRequest ...
 func (c *S3Mem) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObjectsRequest {
 	if input == nil {
 		input = &s3.DeleteObjectsInput{}

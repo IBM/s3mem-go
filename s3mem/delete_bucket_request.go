@@ -19,6 +19,7 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
+//DeleteBucketRequest ...
 func (c *S3Mem) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest {
 	if input == nil {
 		input = &s3.DeleteBucketInput{}
