@@ -6,7 +6,14 @@ It is a work in progess and only some APIs are implemented (Feel free to contrib
 A panic() is raised if you reach a non-implemented API.
 
 
-## Example
+## Usage
+
+There is two ways to create a s3mem client.
+
+- Calling the `s3mem.NewClient()` method. It returns a *s3mem.S3Mem client for the s3mem in-memory implementation and you can use it as client for the AWS S3 methods.
+- Calling the `s3mem.New(cfg aws.Config) method. If the endpoint used to create the config is "s3mem" then it returns a client for the s3mem in-memory implementation otherwize a AWS *s3.S3 client.
+
+## Examples
 
     ```
     func TestListBucketsRequest(t *testing.T) {
@@ -21,9 +28,7 @@ A panic() is raised if you reach a non-implemented API.
         AddBucket(&s3.Bucket{Name: &bucket0})
         AddBucket(&s3.Bucket{Name: &bucket1})
         //Request a client
-        client, err := NewClient()
-        assert.NoError(t, err)
-        assert.NotNil(t, client)
+        client := NewClient()
         //Create the request
         req := client.ListBucketsRequest(&s3.ListBucketsInput{})
         //Send the request

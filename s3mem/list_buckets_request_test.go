@@ -15,6 +15,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,9 +32,7 @@ func TestListBucketsRequest(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucket0})
 	CreateBucket(&s3.Bucket{Name: &bucket1})
 	//Request a client
-	client, err := NewClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	client := New(aws.Config{})
 	//Create the request
 	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
 	//Send the request
