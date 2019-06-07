@@ -33,7 +33,7 @@ func (c *S3Mem) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	putObject := aws.NamedHandler{Name: "S3MemPutObject", Fn: putObject}
 	req.Handlers.Send.PushBackNamed(putObject)
-	return s3.PutObjectRequest{Request: req, Input: input, Copy: c.PutObjectRequest}
+	return s3.PutObjectRequest{Request: req, Input: input}
 }
 
 func putObjectBucketExists(req *aws.Request) {

@@ -35,7 +35,7 @@ func (c *S3Mem) GetObjectRequest(input *s3.GetObjectInput) s3.GetObjectRequest {
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	getObject := aws.NamedHandler{Name: "S3MemGetObject", Fn: getObject}
 	req.Handlers.Send.PushBackNamed(getObject)
-	return s3.GetObjectRequest{Request: req, Input: input, Copy: c.GetObjectRequest}
+	return s3.GetObjectRequest{Request: req, Input: input}
 }
 
 func getObjectBucketExists(req *aws.Request) {
