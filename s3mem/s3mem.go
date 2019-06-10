@@ -226,7 +226,7 @@ func (c *Client) GetBucketMetricsConfigurationRequest(input *s3.GetBucketMetrics
 }
 
 //GetBucketNotificationRequest ...
-func (c *Client) GetBucketNotificationRequest(input *s3.GetBucketNotificationInput) s3.GetBucketNotificationRequest {
+func (c *Client) GetBucketNotificationRequest(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationRequest {
 	req := c.NotImplemented()
 	return s3.GetBucketNotificationRequest{Request: req, Input: input, Copy: nil}
 }
