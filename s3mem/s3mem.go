@@ -15,6 +15,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3/s3iface"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/defaults"
@@ -36,6 +38,8 @@ type Client struct {
 }
 
 var S3MemBuckets Buckets
+
+var _ s3iface.S3API = (s3iface.S3API)(nil)
 
 func init() {
 	S3MemBuckets.Buckets = make(map[string]*Bucket, 0)
