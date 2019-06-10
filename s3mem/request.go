@@ -24,14 +24,18 @@ func (c *Client) NewRequest(params interface{}, data interface{}) *aws.Request {
 	metadata := c.Metadata
 
 	handlers := c.Handlers
-	retryer := c.Retryer
 
 	r := &aws.Request{
-		Config:   cfg,
+		Config: aws.Config{
+			Region:      cfg.Region,
+			Credentials: cfg.Credentials,
+			Handlers:    cfg.Handlers,
+			LogLevel:    cfg.LogLevel,
+			Logger:      cfg.Logger,
+		},
 		Metadata: metadata,
 		Handlers: handlers.Copy(),
 
-		Retryer:     retryer,
 		Time:        time.Now(),
 		ExpireTime:  0,
 		Operation:   &aws.Operation{},

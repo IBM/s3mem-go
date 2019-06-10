@@ -17,58 +17,42 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.ibm.com/open-razee/s3mem-go/s3mem/defaults"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
-const S3MemURL = "s3mem"
-
 type Client struct {
-	*aws.Client
+	Metadata aws.Metadata
+
+	Config Config
+
+	Region      string
+	Credentials aws.CredentialsProvider
+	Handlers    aws.Handlers
+
+	// TODO replace with value not pointer
+	LogLevel aws.LogLevel
+	Logger   aws.Logger
 }
 
 var S3MemBuckets Buckets
-var checkConfigHandler = aws.NamedHandler{Name: "s3mem.checkConfig", Fn: checkConfig}
 
 func init() {
 	S3MemBuckets.Buckets = make(map[string]*Bucket, 0)
 }
 
-func New(config aws.Config) *Client {
-	endpoint, err := config.EndpointResolver.ResolveEndpoint(s3.EndpointsID, config.Region)
-	if err != nil {
-		endpoint = aws.Endpoint{}
-	}
+func New(config Config) *Client {
 	svc := &Client{
-		Client: &aws.Client{
-			Metadata: aws.Metadata{
-				ServiceName:   s3.ServiceName,
-				ServiceID:     s3.ServiceID,
-				SigningName:   endpoint.SigningName,
-				SigningRegion: endpoint.SigningRegion,
-				Endpoint:      endpoint.URL,
-				APIVersion:    "2019-06-10",
-			},
-			Config:      config,
-			Region:      config.Region,
-			Credentials: config.Credentials,
-			Handlers:    config.Handlers,
-			Retryer:     config.Retryer,
-			LogLevel:    config.LogLevel,
-			Logger:      config.Logger,
-		},
+		Config:      config,
+		Region:      config.Region,
+		Credentials: config.Credentials,
+		Handlers:    config.Handlers,
+		LogLevel:    config.LogLevel,
+		Logger:      config.Logger,
 	}
-	svc.Handlers.Build.PushBackNamed(checkConfigHandler)
+	//set handlers
+	svc.Handlers = defaults.Handlers()
 	return svc
-}
-
-func checkConfig(r *aws.Request) {
-	endpoint, err := r.Config.EndpointResolver.ResolveEndpoint(s3.EndpointsID, r.Config.Region)
-	if err != nil {
-		r.Error = s3memerr.NewError(err.Error(), "", nil, nil, nil, nil)
-	}
-	if endpoint.URL != S3MemURL {
-		r.Error = s3memerr.NewError(s3memerr.ErrCodeNotS3MemRequest, "", nil, nil, nil, nil)
-	}
 }
 
 func (c *Client) NotImplemented() *aws.Request {

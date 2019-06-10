@@ -15,30 +15,22 @@ import (
 	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
 
-var S3MemTestConfig aws.Config
+var S3MemTestConfig Config
 
 func init() {
 
-	S3MemTestConfig = aws.Config{}
-	defaultResolver := endpoints.NewDefaultResolver()
-	myCustomResolver := func(service, region string) (aws.Endpoint, error) {
-		if service == s3.EndpointsID {
-			return aws.Endpoint{
-				URL: S3MemURL,
-			}, nil
-		}
-		return defaultResolver.ResolveEndpoint(service, region)
+	S3MemTestConfig = Config{
+		Region: endpoints.EuWest1RegionID,
 	}
-	S3MemTestConfig.EndpointResolver = aws.EndpointResolverFunc(myCustomResolver)
-	S3MemTestConfig.Region = endpoints.UsEast1RegionID
 	S3MemTestConfig.Credentials = aws.NewStaticCredentialsProvider("fake", "fake", "")
 }
 
