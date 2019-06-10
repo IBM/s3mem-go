@@ -23,7 +23,7 @@ import (
 
 func TestCreateBucketRequest(t *testing.T) {
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	bucketName := strings.ToLower(t.Name())
 	req := client.CreateBucketRequest(&s3.CreateBucketInput{
@@ -42,7 +42,7 @@ func TestCreateBucketRequest(t *testing.T) {
 
 func TestCreateBucketRequestBucketAlreadyExists(t *testing.T) {
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	bucketName := strings.ToLower(t.Name())
 	req := client.CreateBucketRequest(&s3.CreateBucketInput{

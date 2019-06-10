@@ -26,7 +26,7 @@ func TestDeleteBucketRequest(t *testing.T) {
 	bucketName := strings.ToLower(t.Name())
 	CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.DeleteBucketRequest(&s3.DeleteBucketInput{
 		Bucket: &bucketName,
@@ -45,7 +45,7 @@ func TestDeleteNotEmptyBucket(t *testing.T) {
 	objectKey := "my-object"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.DeleteBucketRequest(&s3.DeleteBucketInput{
 		Bucket: &bucketName,

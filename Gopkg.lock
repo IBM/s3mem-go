@@ -6,6 +6,7 @@
   packages = [
     "aws",
     "aws/awserr",
+    "aws/endpoints",
     "aws/signer/v4",
     "internal/awsutil",
     "internal/sdk",
@@ -48,6 +49,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "36885d0d669c3f30ecfce09b5b961bb0b7ce04a12d77875344abc0c3e1eb08cf"
+  inputs-digest = "52f3fc29c17f258037591534f187ecc22586ba7ed3c45a1424cf0b7c7733bbb7"
   solver-name = "gps-cdcl"
   solver-version = 1

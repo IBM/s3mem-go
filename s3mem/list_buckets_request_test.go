@@ -31,7 +31,7 @@ func TestListBucketsRequest(t *testing.T) {
 	CreateBucket(&s3.Bucket{Name: &bucket0})
 	CreateBucket(&s3.Bucket{Name: &bucket1})
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
 	//Send the request

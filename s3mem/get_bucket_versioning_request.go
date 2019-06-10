@@ -12,24 +12,18 @@
 package s3mem
 
 import (
-	"net/http"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
 //GetBucketVersioningRequest ...
-func (c *S3Mem) GetBucketVersioningRequest(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
+func (c *Client) GetBucketVersioningRequest(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
 	if input == nil {
 		input = &s3.GetBucketVersioningInput{}
 	}
 	output := &s3.GetBucketVersioningOutput{}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: getBucketVersioningBucketExists}
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	getBucketVersioning := aws.NamedHandler{Name: "S3MemGetBucketVersioning", Fn: getBucketVersioning}
