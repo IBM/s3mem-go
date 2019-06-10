@@ -12,24 +12,18 @@
 package s3mem
 
 import (
-	"net/http"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
 //DeleteObjectRequest ...
-func (c *S3Mem) DeleteObjectRequest(input *s3.DeleteObjectInput) s3.DeleteObjectRequest {
+func (c *Client) DeleteObjectRequest(input *s3.DeleteObjectInput) s3.DeleteObjectRequest {
 	if input == nil {
 		input = &s3.DeleteObjectInput{}
 	}
 	output := &s3.DeleteObjectOutput{}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: deleteObjectBucketExists}
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	objectExists := aws.NamedHandler{Name: "S3MemObjectExists", Fn: deleteObjectObjectExists}

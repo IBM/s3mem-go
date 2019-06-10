@@ -12,7 +12,6 @@
 package s3mem
 
 import (
-	"net/http"
 	"time"
 
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
@@ -22,18 +21,14 @@ import (
 )
 
 //CreateBucketRequest ...
-func (c *S3Mem) CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest {
+func (c *Client) CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest {
 	if input == nil {
 		input = &s3.CreateBucketInput{}
 	}
 	output := &s3.CreateBucketOutput{
 		Location: input.Bucket,
 	}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	createBucketNameValidate := aws.NamedHandler{Name: "S3MemCreateBucketNameValidate", Fn: createBucketBucketExists}
 	req.Handlers.Send.PushBackNamed(createBucketNameValidate)
 	addBucketNameSend := aws.NamedHandler{Name: "S3MemCreateBucketNameSend", Fn: createBucket}

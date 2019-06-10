@@ -12,8 +12,6 @@
 package s3mem
 
 import (
-	"net/http"
-
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -21,7 +19,7 @@ import (
 )
 
 //DeleteObjectsRequest ...
-func (c *S3Mem) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObjectsRequest {
+func (c *Client) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObjectsRequest {
 	if input == nil {
 		input = &s3.DeleteObjectsInput{}
 	}
@@ -29,11 +27,7 @@ func (c *S3Mem) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObje
 		Deleted: make([]s3.DeletedObject, 0),
 		Errors:  make([]s3.Error, 0),
 	}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: deleteObjectsBucketExists}
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	deleteObjects := aws.NamedHandler{Name: "S3MemDeleteObjects", Fn: deleteObjects}

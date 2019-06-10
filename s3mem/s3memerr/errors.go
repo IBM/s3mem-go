@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	ErrCodeNotS3MemRequest                         = "NotS3MemRequest"
 	ErrCodeBucketNotEmpty                          = "BucketNotEmpty"
 	ErrCodeBucketAlreadyExists                     = "BucketAlreadyExists"
 	ErrCodeIllegalVersioningConfigurationException = "IllegalVersioningConfigurationException"

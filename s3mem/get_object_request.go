@@ -14,7 +14,6 @@ package s3mem
 import (
 	"bytes"
 	"io/ioutil"
-	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -22,16 +21,12 @@ import (
 )
 
 //GetObjectRequest ...
-func (c *S3Mem) GetObjectRequest(input *s3.GetObjectInput) s3.GetObjectRequest {
+func (c *Client) GetObjectRequest(input *s3.GetObjectInput) s3.GetObjectRequest {
 	if input == nil {
 		input = &s3.GetObjectInput{}
 	}
 	output := &s3.GetObjectOutput{}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: getObjectBucketExists}
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	getObject := aws.NamedHandler{Name: "S3MemGetObject", Fn: getObject}
