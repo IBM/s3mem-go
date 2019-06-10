@@ -37,7 +37,7 @@ func TestListObjectssRequest(t *testing.T) {
 	PutObject(&bucketName, &objectKey2, strings.NewReader(string(content2)))
 
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.ListObjectsRequest(&s3.ListObjectsInput{
 		Bucket: &bucketName,

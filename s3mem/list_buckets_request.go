@@ -12,23 +12,17 @@
 package s3mem
 
 import (
-	"net/http"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 //ListBucketsRequest ...
-func (c *S3Mem) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsRequest {
+func (c *Client) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsRequest {
 	if input == nil {
 		input = &s3.ListBucketsInput{}
 	}
 	output := &s3.ListBucketsOutput{}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	listBuckets := aws.NamedHandler{Name: "S3MemListBuckets", Fn: listBuckets}
 	req.Handlers.Send.PushBackNamed(listBuckets)
 	return s3.ListBucketsRequest{Request: req, Input: input, Copy: c.ListBucketsRequest}

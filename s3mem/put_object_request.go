@@ -12,24 +12,18 @@
 package s3mem
 
 import (
-	"net/http"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
 //PutObjectRequest ...
-func (c *S3Mem) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
+func (c *Client) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest {
 	if input == nil {
 		input = &s3.PutObjectInput{}
 	}
 	output := &s3.PutObjectOutput{}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: putObjectBucketExists}
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	putObject := aws.NamedHandler{Name: "S3MemPutObject", Fn: putObject}

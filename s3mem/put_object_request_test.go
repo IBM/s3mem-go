@@ -28,7 +28,7 @@ func TestPutObjectRequest(t *testing.T) {
 	objectKey := "my-object"
 	content := "test content"
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.PutObjectRequest(&s3.PutObjectInput{
 		Bucket: &bucketName,
@@ -58,7 +58,7 @@ func TestPutObjectRequestWithVersioningBucket(t *testing.T) {
 	objectKey := "my-object-1"
 	content1 := "test content 1"
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.PutObjectRequest(&s3.PutObjectInput{
 		Bucket: &bucketName,

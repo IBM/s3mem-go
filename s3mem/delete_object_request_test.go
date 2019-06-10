@@ -28,7 +28,7 @@ func TestDeleteObjectRequest(t *testing.T) {
 	objectKey := "my-object"
 	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.DeleteObjectRequest(&s3.DeleteObjectInput{
 		Bucket: &bucketName,
@@ -55,7 +55,7 @@ func TestDeleteObjectRequestBucketVersionedThenRestore(t *testing.T) {
 	content := "test content"
 	PutObject(&bucketName, &objectKey, strings.NewReader(content))
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.DeleteObjectRequest(&s3.DeleteObjectInput{
 		Bucket: &bucketName,
