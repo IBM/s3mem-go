@@ -33,7 +33,7 @@ func TestGetBucketVersioningRequest(t *testing.T) {
 		Status:    s3.BucketVersioningStatusEnabled,
 	})
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 
 	//Create request
 	req := client.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{

@@ -32,7 +32,7 @@ func TestDeleteObjectsRequest(t *testing.T) {
 	objectKey2 := "my-object2"
 	PutObject(&bucketName, &objectKey2, strings.NewReader(string("test contents")))
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	versionId := "1"
 	//Create the request
 	req := client.DeleteObjectsRequest(&s3.DeleteObjectsInput{
@@ -63,7 +63,7 @@ func TestDeleteObjectsRequestBucketNotExists(t *testing.T) {
 	objectKey1 := "my-object1"
 	PutObject(&bucketName, &objectKey1, strings.NewReader(string("test contents")))
 	//Request a client
-	client := New()
+	client := New(S3MemTestConfig)
 	versionId := "1"
 	nonExistBucketName := strings.ToLower(t.Name()) + "-1"
 	//Create the request

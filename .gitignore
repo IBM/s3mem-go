@@ -3,3 +3,4 @@ VERSION
 .idea
 vendor
 _vendor*
+debug.test

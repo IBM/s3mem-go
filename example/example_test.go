@@ -28,8 +28,9 @@ func TestGetObject(t *testing.T) {
 	key := "my-object"
 	content := "test content"
 	s3mem.PutObject(&bucket, &key, strings.NewReader(string(content)))
+	config := s3mem.Config{}
 	//Request a client
-	client := s3mem.New()
+	client := s3mem.New(config)
 	//Call the method to test
 	b, err := GetObject(client, &bucket, &key)
 	//Assert the result

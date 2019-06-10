@@ -12,7 +12,6 @@
 package s3mem
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -21,18 +20,12 @@ import (
 )
 
 //ListObjectsRequest ...
-func (c *S3Mem) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsRequest {
+func (c *Client) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsRequest {
 	if input == nil {
 		input = &s3.ListObjectsInput{}
 	}
 	output := &s3.ListObjectsOutput{}
-	operation := &aws.Operation{}
-	req := &aws.Request{
-		Params:      input,
-		Data:        output,
-		Operation:   operation,
-		HTTPRequest: &http.Request{},
-	}
+	req := c.NewRequest(input, output)
 	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: listObjectsBucketExists}
 	req.Handlers.Send.PushBackNamed(bucketExists)
 	listObjects := aws.NamedHandler{Name: "S3MemListObjects", Fn: listObjects}
