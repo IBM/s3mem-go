@@ -34,9 +34,20 @@ func init() {
 }
 
 func New(config aws.Config) *Client {
+	endpoint, err := config.EndpointResolver.ResolveEndpoint(s3.EndpointsID, config.Region)
+	if err != nil {
+		endpoint = aws.Endpoint{}
+	}
 	svc := &Client{
 		Client: &aws.Client{
-			Metadata:    aws.Metadata{},
+			Metadata: aws.Metadata{
+				ServiceName:   s3.ServiceName,
+				ServiceID:     s3.ServiceID,
+				SigningName:   endpoint.SigningName,
+				SigningRegion: endpoint.SigningRegion,
+				Endpoint:      endpoint.URL,
+				APIVersion:    "2019-06-10",
+			},
 			Config:      config,
 			Region:      config.Region,
 			Credentials: config.Credentials,
