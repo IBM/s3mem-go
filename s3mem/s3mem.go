@@ -51,7 +51,7 @@ func New(config aws.Config) *Client {
 }
 
 func checkConfig(r *aws.Request) {
-	endpoint, err := r.Config.EndpointResolver.ResolveEndpoint("s3", r.Config.Region)
+	endpoint, err := r.Config.EndpointResolver.ResolveEndpoint(s3.EndpointsID, r.Config.Region)
 	if err != nil {
 		r.Error = s3memerr.NewError(err.Error(), "", nil, nil, nil, nil)
 	}

@@ -30,7 +30,7 @@ func init() {
 	S3MemTestConfig = aws.Config{}
 	defaultResolver := endpoints.NewDefaultResolver()
 	myCustomResolver := func(service, region string) (aws.Endpoint, error) {
-		if service == "s3" {
+		if service == s3.EndpointsID {
 			return aws.Endpoint{
 				URL: S3MemURL,
 			}, nil
