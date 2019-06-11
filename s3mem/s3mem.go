@@ -39,7 +39,7 @@ type Client struct {
 
 var S3MemBuckets Buckets
 
-var _ s3iface.S3API = (s3iface.S3API)(nil)
+var _ s3iface.ClientAPI = (s3iface.ClientAPI)(nil)
 
 func init() {
 	S3MemBuckets.Buckets = make(map[string]*Bucket, 0)
@@ -230,7 +230,7 @@ func (c *Client) GetBucketMetricsConfigurationRequest(input *s3.GetBucketMetrics
 }
 
 //GetBucketNotificationRequest ...
-func (c *Client) GetBucketNotificationRequest(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationRequest {
+func (c *Client) GetBucketNotificationRequest(input *s3.GetBucketNotificationInput) s3.GetBucketNotificationRequest {
 	req := c.NotImplemented()
 	return s3.GetBucketNotificationRequest{Request: req, Input: input, Copy: nil}
 }
