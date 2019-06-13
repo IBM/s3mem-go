@@ -12,11 +12,17 @@
 package s3mem
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
+
+const opDeleteObjects = "DeleteObjects"
 
 //DeleteObjectsRequest ...
 func (c *Client) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObjectsRequest {
@@ -27,25 +33,18 @@ func (c *Client) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObj
 		Deleted: make([]s3.DeletedObject, 0),
 		Errors:  make([]s3.Error, 0),
 	}
-	req := c.NewRequest(input, output)
-	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: deleteObjectsBucketExists}
-	req.Handlers.Send.PushBackNamed(bucketExists)
-	deleteObjects := aws.NamedHandler{Name: "S3MemDeleteObjects", Fn: deleteObjects}
-	req.Handlers.Send.PushBackNamed(deleteObjects)
+	op := &aws.Operation{
+		Name:       opDeleteObjects,
+		HTTPMethod: "POST",
+		HTTPPath:   "/{Bucket}?delete",
+	}
+	req := c.NewRequest(op, input, output)
 	return s3.DeleteObjectsRequest{Request: req, Input: input}
 }
 
-func deleteObjectsBucketExists(req *aws.Request) {
-	if req.Error != nil {
-		return
-	}
+func deleteObjects(req *aws.Request) {
 	if !IsBucketExist(req.Params.(*s3.DeleteObjectsInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.DeleteObjectsInput).Bucket, nil, nil)
-	}
-}
-
-func deleteObjects(req *aws.Request) {
-	if req.Error != nil {
 		return
 	}
 	for _, obj := range req.Params.(*s3.DeleteObjectsInput).Delete.Objects {
@@ -60,4 +59,7 @@ func deleteObjects(req *aws.Request) {
 			Key:                   obj.Key,
 		})
 	}
+	//This is needed just to logResponse when requested
+	body, _ := json.MarshalIndent(req.Data.(*s3.DeleteObjectsOutput), "", "  ")
+	req.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(body))
 }

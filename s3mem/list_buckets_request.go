@@ -12,9 +12,16 @@
 package s3mem
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"sort"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
+
+const opListBuckets = "ListBuckets"
 
 //ListBucketsRequest ...
 func (c *Client) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsRequest {
@@ -22,9 +29,12 @@ func (c *Client) ListBucketsRequest(input *s3.ListBucketsInput) s3.ListBucketsRe
 		input = &s3.ListBucketsInput{}
 	}
 	output := &s3.ListBucketsOutput{}
-	req := c.NewRequest(input, output)
-	listBuckets := aws.NamedHandler{Name: "S3MemListBuckets", Fn: listBuckets}
-	req.Handlers.Send.PushBackNamed(listBuckets)
+	op := &aws.Operation{
+		Name:       opListBuckets,
+		HTTPMethod: "GET",
+		HTTPPath:   "/",
+	}
+	req := c.NewRequest(op, input, output)
 	return s3.ListBucketsRequest{Request: req, Input: input, Copy: c.ListBucketsRequest}
 }
 
@@ -33,7 +43,15 @@ func listBuckets(req *aws.Request) {
 		return
 	}
 	req.Data.(*s3.ListBucketsOutput).Buckets = make([]s3.Bucket, 0)
-	for _, value := range S3MemBuckets.Buckets {
-		req.Data.(*s3.ListBucketsOutput).Buckets = append(req.Data.(*s3.ListBucketsOutput).Buckets, *value.Bucket)
+	var keys []string
+	for k := range S3MemBuckets.Buckets {
+		keys = append(keys, k)
 	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		req.Data.(*s3.ListBucketsOutput).Buckets = append(req.Data.(*s3.ListBucketsOutput).Buckets, *S3MemBuckets.Buckets[k].Bucket)
+	}
+	//This is needed just to logResponse when requested
+	body, _ := json.MarshalIndent(req.Data.(*s3.ListBucketsOutput), "", "  ")
+	req.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(body))
 }

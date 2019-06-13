@@ -19,44 +19,21 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.ibm.com/open-razee/s3mem-go/s3mem/defaults"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
-type Client struct {
-	Metadata aws.Metadata
-
-	Config Config
-
-	Region      string
-	Credentials aws.CredentialsProvider
-	Handlers    aws.Handlers
-
-	// TODO replace with value not pointer
-	LogLevel aws.LogLevel
-	Logger   aws.Logger
-}
-
 var S3MemBuckets Buckets
+var S3MemUsers Users
 
 var _ s3iface.ClientAPI = (s3iface.ClientAPI)(nil)
 
 func init() {
 	S3MemBuckets.Buckets = make(map[string]*Bucket, 0)
-}
-
-func New(config Config) *Client {
-	svc := &Client{
-		Config:      config,
-		Region:      config.Region,
-		Credentials: config.Credentials,
-		Handlers:    config.Handlers,
-		LogLevel:    config.LogLevel,
-		Logger:      config.Logger,
+	S3MemUsers.Users = make(map[string]*User, 0)
+	S3MemUsers.Users["admin"] = &User{
+		CanonicalID: "admin",
+		Email:       "admin@acme.com",
 	}
-	//set handlers
-	svc.Handlers = defaults.Handlers()
-	return svc
 }
 
 func (c *Client) NotImplemented() *aws.Request {
@@ -77,12 +54,6 @@ func (c *Client) AbortMultipartUploadRequest(input *s3.AbortMultipartUploadInput
 func (c *Client) CompleteMultipartUploadRequest(input *s3.CompleteMultipartUploadInput) s3.CompleteMultipartUploadRequest {
 	req := c.NotImplemented()
 	return s3.CompleteMultipartUploadRequest{Request: req, Input: input, Copy: nil}
-}
-
-//CopyObjectRequest ...
-func (c *Client) CopyObjectRequest(input *s3.CopyObjectInput) s3.CopyObjectRequest {
-	req := c.NotImplemented()
-	return s3.CopyObjectRequest{Request: req, Input: input, Copy: nil}
 }
 
 //CreateMultipartUploadRequest ...
