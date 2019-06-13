@@ -19,7 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/s3iface"
 )
 
-func GetObject(client s3iface.S3API, bucket *string, key *string) ([]byte, error) {
+func GetObject(client s3iface.ClientAPI, bucket *string, key *string) ([]byte, error) {
 	//Create a request
 	req := client.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: bucket,

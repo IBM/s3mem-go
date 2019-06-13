@@ -24,14 +24,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var S3MemTestConfig Config
+var S3MemTestConfig aws.Config
 
 func init() {
-
-	S3MemTestConfig = Config{
-		Region: endpoints.EuWest1RegionID,
+	S3MemTestConfig = aws.Config{
+		Region:      endpoints.EuWest1RegionID,
+		LogLevel:    aws.LogDebugWithHTTPBody,
+		Logger:      aws.NewDefaultLogger(),
+		Credentials: aws.NewStaticCredentialsProvider("fake", "fake", ""),
 	}
-	S3MemTestConfig.Credentials = aws.NewStaticCredentialsProvider("fake", "fake", "")
 }
 
 func TestNewClient(t *testing.T) {
