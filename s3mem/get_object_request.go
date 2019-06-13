@@ -13,6 +13,7 @@ package s3mem
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,32 +21,26 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
+const opGetObject = "GetObject"
+
 //GetObjectRequest ...
 func (c *Client) GetObjectRequest(input *s3.GetObjectInput) s3.GetObjectRequest {
 	if input == nil {
 		input = &s3.GetObjectInput{}
 	}
 	output := &s3.GetObjectOutput{}
-	req := c.NewRequest(input, output)
-	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: getObjectBucketExists}
-	req.Handlers.Send.PushBackNamed(bucketExists)
-	getObject := aws.NamedHandler{Name: "S3MemGetObject", Fn: getObject}
-	req.Handlers.Send.PushBackNamed(getObject)
+	operation := &aws.Operation{
+		Name:       opGetObject,
+		HTTPMethod: "GET",
+		HTTPPath:   "/{Bucket}/{Key+}",
+	}
+	req := c.NewRequest(operation, input, output)
 	return s3.GetObjectRequest{Request: req, Input: input}
 }
 
-func getObjectBucketExists(req *aws.Request) {
-	if req.Error != nil {
-		return
-	}
+func getObject(req *aws.Request) {
 	if !IsBucketExist(req.Params.(*s3.GetObjectInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.GetObjectInput).Bucket, nil, nil)
-	}
-}
-
-func getObject(req *aws.Request) {
-	if req.Error != nil {
-		return
 	}
 	obj, versionId, err := GetObject(req.Params.(*s3.GetObjectInput).Bucket, req.Params.(*s3.GetObjectInput).Key, req.Params.(*s3.GetObjectInput).VersionId)
 	if err != nil {
@@ -58,4 +53,7 @@ func getObject(req *aws.Request) {
 	}
 	req.Data.(*s3.GetObjectOutput).Body = ioutil.NopCloser(bytes.NewReader(obj.Content))
 	req.Data.(*s3.GetObjectOutput).VersionId = versionId
+	//This is needed just to logResponse when requested
+	body, _ := json.MarshalIndent(req.Data.(*s3.GetObjectOutput), "", "  ")
+	req.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(body))
 }

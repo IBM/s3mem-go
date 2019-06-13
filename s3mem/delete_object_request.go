@@ -12,10 +12,16 @@
 package s3mem
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
+
+const opDeleteObject = "DeleteObject"
 
 //DeleteObjectRequest ...
 func (c *Client) DeleteObjectRequest(input *s3.DeleteObjectInput) s3.DeleteObjectRequest {
@@ -23,36 +29,22 @@ func (c *Client) DeleteObjectRequest(input *s3.DeleteObjectInput) s3.DeleteObjec
 		input = &s3.DeleteObjectInput{}
 	}
 	output := &s3.DeleteObjectOutput{}
-	req := c.NewRequest(input, output)
-	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: deleteObjectBucketExists}
-	req.Handlers.Send.PushBackNamed(bucketExists)
-	objectExists := aws.NamedHandler{Name: "S3MemObjectExists", Fn: deleteObjectObjectExists}
-	req.Handlers.Send.PushBackNamed(objectExists)
-	deleteObject := aws.NamedHandler{Name: "S3MemDeleteObject", Fn: deleteObject}
-	req.Handlers.Send.PushBackNamed(deleteObject)
+	op := &aws.Operation{
+		Name:       opDeleteObject,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/{Bucket}/{Key+}",
+	}
+	req := c.NewRequest(op, input, output)
 	return s3.DeleteObjectRequest{Request: req, Input: input}
 }
 
-func deleteObjectBucketExists(req *aws.Request) {
-	if req.Error != nil {
-		return
-	}
+func deleteObject(req *aws.Request) {
 	if !IsBucketExist(req.Params.(*s3.DeleteObjectInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.DeleteObjectInput).Bucket, nil, nil)
-	}
-}
-
-func deleteObjectObjectExists(req *aws.Request) {
-	if req.Error != nil {
 		return
 	}
 	if !IsObjectExist(req.Params.(*s3.DeleteObjectInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, req.Params.(*s3.DeleteObjectInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key, req.Params.(*s3.DeleteObjectInput).VersionId)
-	}
-}
-
-func deleteObject(req *aws.Request) {
-	if req.Error != nil {
 		return
 	}
 	deleteMarker, versionID, err := DeleteObject(req.Params.(*s3.DeleteObjectInput).Bucket, req.Params.(*s3.DeleteObjectInput).Key, req.Params.(*s3.DeleteObjectInput).VersionId)
@@ -62,4 +54,7 @@ func deleteObject(req *aws.Request) {
 	}
 	req.Data.(*s3.DeleteObjectOutput).DeleteMarker = deleteMarker
 	req.Data.(*s3.DeleteObjectOutput).VersionId = versionID
+	//This is needed just to logResponse when requested
+	body, _ := json.MarshalIndent(req.Data.(*s3.DeleteObjectOutput), "", "  ")
+	req.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(body))
 }

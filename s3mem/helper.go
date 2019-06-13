@@ -12,10 +12,12 @@
 package s3mem
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -48,6 +50,8 @@ func IsBucketEmpty(bucket *string) bool {
 
 //CreateBucket adds a bucket in memory
 func CreateBucket(b *s3.Bucket) {
+	tc := time.Now()
+	b.CreationDate = &tc
 	S3MemBuckets.Buckets[*b.Name] = &Bucket{
 		Bucket:  b,
 		Objects: make(map[string]*VersionedObjects, 0),
@@ -67,7 +71,7 @@ func IsObjectExist(bucket *string, key *string) bool {
 
 //PutObject adds an object in memory return the object.
 //Raise an error if a failure to read the body occurs
-func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, error) {
+func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, *string, error) {
 	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
 		S3MemBuckets.Buckets[*bucket].Objects = make(map[string]*VersionedObjects, 0)
 	}
@@ -79,7 +83,7 @@ func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, error)
 	tc := time.Now()
 	content, err := ioutil.ReadAll(body)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	obj := &Object{
 		Object: &s3.Object{
@@ -93,9 +97,14 @@ func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, error)
 	if versioning != nil && versioning.Status == s3.BucketVersioningStatusEnabled {
 		S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
 	} else {
-		S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
+		if len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) == 0 {
+			S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
+		} else {
+			S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[0] = obj
+		}
 	}
-	return obj, nil
+	versionId := strconv.Itoa(len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) - 1)
+	return obj, &versionId, nil
 }
 
 //GetObject gets an object from memory return the Object and its versionID
@@ -108,7 +117,6 @@ func GetObject(bucket *string, key *string, versionIDS *string) (object *Object,
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, versionIDS)
 	}
 	l := len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects)
-	log.Printf("Size %d:", l)
 	if l > 0 {
 		versioning := S3MemBuckets.Buckets[*bucket].VersioningConfiguration
 		if versioning != nil && versioning.Status == s3.BucketVersioningStatusEnabled {
@@ -138,7 +146,6 @@ func GetObject(bucket *string, key *string, versionIDS *string) (object *Object,
 		if object.DeletedObject != nil {
 			return nil, nil, s3memerr.NewError(s3memerr.ErrCodeNoSuchVersion, "", nil, bucket, key, versionIDS)
 		}
-		log.Printf("object versionID %s", *versionIDSOut)
 		return
 	}
 	return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, nil)
@@ -163,8 +170,6 @@ func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarker
 				if err != nil {
 					return nil, nil, s3memerr.NewError(s3memerr.ErrCodeNoSuchVersion, "Version not a number", err, bucket, key, versionIDS)
 				}
-				log.Printf("VersionID: %s", *versionIDS)
-				log.Printf("l: %d", l)
 				if l-1 == versionID {
 					S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:l-1]
 				} else {
@@ -211,4 +216,51 @@ func GetBucketVersioning(bucket *string) (*string, *s3.VersioningConfiguration) 
 		return nil, nil
 	}
 	return S3MemBuckets.Buckets[*bucket].MFA, S3MemBuckets.Buckets[*bucket].VersioningConfiguration
+}
+
+func CreateUser(canonicalID, email *string) error {
+	if _, ok := S3MemUsers.Users[*canonicalID]; ok {
+		return fmt.Errorf("User %s already exists", *canonicalID)
+	}
+	S3MemUsers.Users[*canonicalID] = &User{
+		CanonicalID: *canonicalID,
+		Email:       *email,
+	}
+	return nil
+}
+
+func GetUser(canonicalID, email *string) (*User, error) {
+	if canonicalID == nil {
+		user, err := searchUserByEmail(email)
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+	}
+	if user, ok := S3MemUsers.Users[*canonicalID]; ok {
+		return user, nil
+	}
+	return nil, fmt.Errorf("User with email %s not found", *email)
+}
+
+func searchUserByEmail(email *string) (*User, error) {
+	var user *User
+	for _, v := range S3MemUsers.Users {
+		if v.Email == *email {
+			user = v
+			break
+		}
+	}
+	if user == nil {
+		return nil, fmt.Errorf("User with email %s not found", *email)
+	}
+	return user, nil
+}
+
+func ParseObjectURL(url *string) (bucket, key *string, err error) {
+	segs := strings.SplitN(*url, "/", 2)
+	if len(segs) < 2 {
+		return nil, nil, errors.New("Malformed url")
+	}
+	return &segs[0], &segs[1], nil
 }

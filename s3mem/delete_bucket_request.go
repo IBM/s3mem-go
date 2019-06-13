@@ -12,10 +12,16 @@
 package s3mem
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
+
+const opDeleteBucket = "DeleteBucket"
 
 //DeleteBucketRequest ...
 func (c *Client) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest {
@@ -23,37 +29,26 @@ func (c *Client) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucke
 		input = &s3.DeleteBucketInput{}
 	}
 	output := &s3.DeleteBucketOutput{}
-	req := c.NewRequest(input, output)
-	bucketExists := aws.NamedHandler{Name: "S3MemBucketExists", Fn: deleteBucketBucketExists}
-	req.Handlers.Send.PushBackNamed(bucketExists)
-	bucketIsEmpty := aws.NamedHandler{Name: "S3MemBucketIsEmpty", Fn: deleteBucketBucketIsEmpty}
-	req.Handlers.Send.PushBackNamed(bucketIsEmpty)
-	deleteBucket := aws.NamedHandler{Name: "S3MemDeleteBucket", Fn: deleteBucket}
-	req.Handlers.Send.PushBackNamed(deleteBucket)
+	op := &aws.Operation{
+		Name:       opDeleteBucket,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/{Bucket}",
+	}
+	req := c.NewRequest(op, input, output)
 	return s3.DeleteBucketRequest{Request: req, Input: input}
 }
 
-func deleteBucketBucketExists(req *aws.Request) {
-	if req.Error != nil {
-		return
-	}
+func deleteBucket(req *aws.Request) {
 	if !IsBucketExist(req.Params.(*s3.DeleteBucketInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.DeleteBucketInput).Bucket, nil, nil)
-	}
-}
-
-func deleteBucketBucketIsEmpty(req *aws.Request) {
-	if req.Error != nil {
 		return
 	}
 	if !IsBucketEmpty(req.Params.(*s3.DeleteBucketInput).Bucket) {
 		req.Error = s3memerr.NewError(s3memerr.ErrCodeBucketNotEmpty, "", nil, req.Params.(*s3.DeleteBucketInput).Bucket, nil, nil)
-	}
-}
-
-func deleteBucket(req *aws.Request) {
-	if req.Error != nil {
 		return
 	}
 	DeleteBucket(req.Params.(*s3.DeleteBucketInput).Bucket)
+	//This is needed just to logResponse when requested
+	body, _ := json.MarshalIndent(req.Data.(*s3.DeleteBucketOutput), "", "  ")
+	req.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(body))
 }

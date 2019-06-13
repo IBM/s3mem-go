@@ -5,17 +5,18 @@ It is a work in progess and only some APIs are implemented (Feel free to contrib
 
 ## Usage
 
-To get a client call the `s3mem.New()` function. It returns a s3iface.S3API client for the s3mem in-memory implementation and you can use it as client for the AWS S3 methods.
+To get a client call the `s3mem.New()` function. It returns a s3iface.ClientAPI client for the s3mem in-memory implementation and you can use it as client for the AWS S3 methods.
 
 ### Examples
 
 As example here a method which retrieves an object from an S3 implementation [Example](example/example.go) and here how to write a test for it [Example Test](example/example_test.go) using s3mem.
-The s3m3m package offers a number of helper functions to manage the buckets and objects without using the S3API. This is useful to setup your tests. You can find them in the [Helper functions](s3mem/helper.go)
+The s3mem package offers a number of helper functions to manage the buckets and objects without using the S3API. This is useful to setup your tests. You can find them in the [Helper functions](s3mem/helper.go)
 
 
 ## Implemented mehtods
 
 ```
+CopyObjectRequest(*s3.CopyObjectInput) s3.CopyObjectRequest
 CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest
 DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest
 DeleteObjectRequest(input *s3.DeleteObjectInput) s3.DeleteObjectRequest
@@ -33,7 +34,6 @@ PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest
 ```
 AbortMultipartUploadRequest(*s3.AbortMultipartUploadInput) s3.AbortMultipartUploadRequest
 CompleteMultipartUploadRequest(*s3.CompleteMultipartUploadInput) s3.CompleteMultipartUploadRequest
-CopyObjectRequest(*s3.CopyObjectInput) s3.CopyObjectRequest
 CreateMultipartUploadRequest(*s3.CreateMultipartUploadInput) s3.CreateMultipartUploadRequest
 DeleteBucketAnalyticsConfigurationRequest(*s3.DeleteBucketAnalyticsConfigurationInput) s3.DeleteBucketAnalyticsConfigurationRequest
 DeleteBucketCorsRequest(*s3.DeleteBucketCorsInput) s3.DeleteBucketCorsRequest 
