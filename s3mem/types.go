@@ -25,6 +25,7 @@ type Buckets struct {
 //(bucket/key/version)
 type Bucket struct {
 	Bucket                  *s3.Bucket
+	AccessControlPolicy     *s3.AccessControlPolicy
 	MFA                     *string
 	VersioningConfiguration *s3.VersioningConfiguration
 	Objects                 map[string]*VersionedObjects
@@ -36,7 +37,17 @@ type VersionedObjects struct {
 }
 
 type Object struct {
-	Object        *s3.Object
-	DeletedObject *s3.DeletedObject
-	Content       []byte
+	Object              *s3.Object
+	AccessControlPolicy *s3.AccessControlPolicy
+	DeletedObject       *s3.DeletedObject
+	Content             []byte
+}
+
+type Users struct {
+	Users map[string]*User
+}
+
+type User struct {
+	CanonicalID string
+	Email       string
 }

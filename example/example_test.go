@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -28,7 +30,30 @@ func TestGetObject(t *testing.T) {
 	key := "my-object"
 	content := "test content"
 	s3mem.PutObject(&bucket, &key, strings.NewReader(string(content)))
-	config := s3mem.Config{}
+	config := aws.Config{}
+	//Request a client
+	client := s3mem.New(config)
+	//Call the method to test
+	b, err := GetObject(client, &bucket, &key)
+	//Assert the result
+	assert.NoError(t, err)
+	assert.Equal(t, content, string(b))
+}
+
+func TestGetObjectWithLog(t *testing.T) {
+	//Adding bucket directly in mem to prepare the test.
+	bucket := strings.ToLower(t.Name())
+	s3mem.CreateBucket(&s3.Bucket{Name: &bucket})
+	//Adding an Object directly in mem to prepare the test.
+	key := "my-object"
+	content := "test content"
+	s3mem.PutObject(&bucket, &key, strings.NewReader(string(content)))
+	// config, err := external.LoadDefaultAWSConfig()
+	// assert.NoError(t, err)
+	config := aws.Config{
+		LogLevel: aws.LogDebugWithHTTPBody,
+		Logger:   aws.NewDefaultLogger(),
+	}
 	//Request a client
 	client := s3mem.New(config)
 	//Call the method to test

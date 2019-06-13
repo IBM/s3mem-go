@@ -8,18 +8,19 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
-package defaults
+
+package s3mem
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-const S3MemURL = "s3mem"
-
-func Handlers() aws.Handlers {
-	var handlers aws.Handlers
-
-	handlers.Build.PushBackNamed(checkConfigHandler)
-
-	return handlers
+func TestParseObjectURL(t *testing.T) {
+	url := "bucket/folder1/folder2/key"
+	bucket, key, err := ParseObjectURL(&url)
+	assert.NoError(t, err)
+	assert.Equal(t, "bucket", *bucket)
+	assert.Equal(t, "folder1/folder2/key", *key)
 }
