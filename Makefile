@@ -44,8 +44,9 @@ pre-req:: dep-install
 go-test:
 	@echo "Start Integration test"; 
 	#go clean -testcache
-	go test -p 1 -v github.ibm.com/open-razee/s3mem-go/s3mem/...
-
+	go test -p 1 -v -coverprofile=c.out github.ibm.com/open-razee/s3mem-go/s3mem/...
+	go tool cover -func=c.out
+	
 .PHONY: copyright-check
 copyright-check:
 	./build-tools/copyright-check.sh
