@@ -36,3 +36,18 @@ func GetObject(client s3iface.ClientAPI, bucket *string, key *string) ([]byte, e
 	newBytes := buf.Bytes()
 	return newBytes, nil
 }
+
+func GetBuckets(client s3iface.ClientAPI) ([]string, error) {
+	//Create the request
+	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
+	//Send the request
+	listBucketsOutput, err := req.Send(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	buckets := make([]string, len(listBucketsOutput.Buckets))
+	for i, v := range listBucketsOutput.Buckets {
+		buckets[i] = *v.Name
+	}
+	return buckets, nil
+}
