@@ -2,6 +2,7 @@
 
 
 [[projects]]
+  digest = "1:99836a9c1dee8a23d87794d213e857ee6b08a0594e27453e52d9683b99f561aa"
   name = "github.com/aws/aws-sdk-go-v2"
   packages = [
     "aws",
@@ -18,37 +19,54 @@
     "private/protocol/xml",
     "private/protocol/xml/xmlutil",
     "service/s3",
-    "service/s3/s3iface"
+    "service/s3/s3iface",
   ]
+  pruneopts = "UT"
   revision = "098e15df3044cf1b04a222c1c33c3e6135ac89f3"
   version = "v0.9.0"
 
 [[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
+  pruneopts = "UT"
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:bb81097a5b62634f3e9fec1014657855610c82d19b9a40c17612e32651e35dca"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
+  pruneopts = "UT"
   revision = "c2b33e84"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
+  pruneopts = "UT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:972c2427413d41a1e06ca4897e8528e5a1622894050e2f527b38ddf0f343f759"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
+  pruneopts = "UT"
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dab4c9c3b165089b3c96a965c52268b709293ed6d26f726f9872ff1af9f91280"
+  input-imports = [
+    "github.com/aws/aws-sdk-go-v2/aws",
+    "github.com/aws/aws-sdk-go-v2/aws/awserr",
+    "github.com/aws/aws-sdk-go-v2/aws/endpoints",
+    "github.com/aws/aws-sdk-go-v2/private/protocol/restxml",
+    "github.com/aws/aws-sdk-go-v2/service/s3",
+    "github.com/aws/aws-sdk-go-v2/service/s3/s3iface",
+    "github.com/stretchr/testify/assert",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

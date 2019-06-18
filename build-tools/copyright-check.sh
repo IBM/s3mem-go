@@ -1,27 +1,28 @@
 #!/bin/bash
 
-# Licensed Materials - Property of IBM
-# (c) Copyright IBM Corporation 2017, 2019. All Rights Reserved.
-# Note to U.S. Government Users Restricted Rights:
-# Use, duplication or disclosure restricted by GSA ADP Schedule
-# Contract with IBM Corp.
 
-YEAR="2017, 2019"
+IFS='' read -r -d '' LICENSE <<'EOF'
+################################################################################
+# Copyright 2019 IBM Corp. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+EOF
 
-#LINE1="${COMMENT_PREFIX}Licensed Materials - Property of IBM"
-CHECK1="# Licensed Materials - Property of IBM"
-#LINE2="${COMMENT_PREFIX}(c) Copyright IBM Corporation ${YEAR}. All Rights Reserved."
-CHECK2=" Copyright IBM Corporation ${YEAR}. All Rights Reserved."
-#LINE3="${COMMENT_PREFIX}Note to U.S. Government Users Restricted Rights:"
-CHECK3="# U.S. Government Users Restricted Rights -"
-#LINE4="${COMMENT_PREFIX}Use, duplication or disclosure restricted by GSA ADP Schedule"
-CHECK4=" Use, duplication or disclosure restricted by GSA ADP"
-#LINE5="${COMMENT_PREFIX}Contract with IBM Corp."
-CHECK5="#  IBM Corporation - initial API and implementation"
 
-#LIC_ARY to scan for
-LIC_ARY=("$CHECK1" "$CHECK2" "$CHECK3" "$CHECK4" "$CHECK5")
+LICENSE_NB_LINE=`echo "$LICENSE" | wc -l`
 
+HEADER_TO_READ=$(($LICENSE_NB_LINE +5))
 
 ERROR=0
 
@@ -41,15 +42,12 @@ for f in `find .  \( -path ./vendor -prune \) -type f  ! -iname ".*" -o  -print`
   esac
 
   # Read the first 10 lines
-  HEADER=`head -10 $f`
+  HEADER=`head -$HEADER_TO_READ $f`
   printf "Scanning $f\n"
-  for i in `seq 0 4`; do
-    if [[ "$HEADER" != *"${LIC_ARY[$i]}"* ]]; then
-      printf "Missing [${LIC_ARY[$i]}] file $f\n"
+  if [[ "$HEADER" != *"$LICENSE"* ]]; then
+      printf "Missing or incorrect license in file $f\n"
       ERROR=1
-      break
-    fi
-  done
+  fi
 done
 
 echo "##### Copyright check ##### ReturnCode: ${ERROR}"

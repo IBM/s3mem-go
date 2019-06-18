@@ -15,19 +15,31 @@
 # limitations under the License.
 ################################################################################
 */
-
 package s3mem
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseObjectURL(t *testing.T) {
-	url := "bucket/folder1/folder2/key"
-	bucket, key, err := ParseObjectURL(&url)
+func TestClientLoggerWrite(t *testing.T) {
+	logger := &logWriter{
+		Logger: aws.NewDefaultLogger(),
+		buf:    new(bytes.Buffer),
+	}
+	l := logger.buf.Len()
+	n, err := logger.Write([]byte("b"))
 	assert.NoError(t, err)
-	assert.Equal(t, "bucket", *bucket)
-	assert.Equal(t, "folder1/folder2/key", *key)
+	assert.Equal(t, l+1, n)
 }
+
+// func TestClientLoggerClose(t *testing.T) {
+// 	logger := &logWriter{
+// 		Logger: aws.NewDefaultLogger(),
+// 		buf:    new(bytes.Buffer),
+// 	}
+// 	err := logger.
+// }
