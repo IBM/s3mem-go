@@ -1,12 +1,19 @@
 /*
-###############################################################################
-# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2019. All Rights Reserved.
-# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
-# Schedule Contract with IBM Corp.
+################################################################################
+# Copyright 2019 IBM Corp. All Rights Reserved.
 #
-# Contributors:
-#  IBM Corporation - initial API and implementation
-###############################################################################
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
 */
 package example
 
@@ -61,4 +68,30 @@ func TestGetObjectWithLog(t *testing.T) {
 	//Assert the result
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(b))
+}
+
+func TestListBucketsRequest(t *testing.T) {
+	//Need to lock for testing as tests are running concurrently
+	//and meanwhile another running test could change the stored buckets
+	s3mem.S3MemBuckets.Mux.Lock()
+	defer s3mem.S3MemBuckets.Mux.Unlock()
+	//Adding bucket directly in mem to prepare the test.
+	bucket0 := strings.ToLower(t.Name() + "0")
+	bucket1 := strings.ToLower(t.Name() + "1")
+	s3mem.CreateBucket(&s3.Bucket{Name: &bucket0})
+	s3mem.CreateBucket(&s3.Bucket{Name: &bucket1})
+	l := len(s3mem.S3MemBuckets.Buckets)
+	//Request a client
+	config := aws.Config{}
+	client := s3mem.New(config)
+	//Call GetBuckets
+	buckets, err := GetBuckets(client)
+	//Assert the result
+	assert.NoError(t, err)
+	assert.Equal(t, l, len(buckets))
+	//We can check each bucket name in that order as the
+	//AWS S3 ListBucketRequest is supposed to return all bucket in
+	//alphabetic order.
+	assert.Equal(t, bucket0, buckets[0])
+	assert.Equal(t, bucket1, buckets[1])
 }
