@@ -37,7 +37,7 @@ func Clear(datastore string) {
 }
 
 func CreateDatastore(datastore string) *Buckets {
-	datastore = getDatastore(datastore)
+	datastore = GetDatastore(datastore)
 	if _, ok := S3MemDatastores.Datastores[datastore]; !ok {
 		S3MemDatastores.Datastores[datastore] = &Buckets{
 			Buckets: make(map[string]*Bucket, 0),
@@ -46,7 +46,7 @@ func CreateDatastore(datastore string) *Buckets {
 	return S3MemDatastores.Datastores[datastore]
 }
 
-func getDatastore(datastore string) string {
+func GetDatastore(datastore string) string {
 	if datastore == "" {
 		return S3MemEndpointsID
 	}
