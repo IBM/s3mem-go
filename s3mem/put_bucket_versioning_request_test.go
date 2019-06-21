@@ -30,7 +30,7 @@ import (
 func TestPutBucketVersioningRequestMFAString(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 
 	//Request a client
 	client := New(S3MemTestConfig)
@@ -44,7 +44,7 @@ func TestPutBucketVersioningRequestMFAString(t *testing.T) {
 	//Assert the result
 	assert.NoError(t, err)
 	assert.NotNil(t, putBucketVersioningOutput)
-	mfaOut, _ := GetBucketVersioning(&bucketName)
+	mfaOut, _ := GetBucketVersioning(S3MemEndpointsID, &bucketName)
 	assert.NotNil(t, mfaOut)
 	assert.Equal(t, mfa, *mfaOut)
 }
@@ -52,7 +52,7 @@ func TestPutBucketVersioningRequestMFAString(t *testing.T) {
 func TestPutBucketVersioningRequestMFAEnable(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 
 	//Request a client
 	client := New(S3MemTestConfig)
@@ -70,7 +70,7 @@ func TestPutBucketVersioningRequestMFAEnable(t *testing.T) {
 	//Assert the result
 	assert.NoError(t, err)
 	assert.NotNil(t, putBucketVersioningOutput)
-	_, versioningConfigurationOut := GetBucketVersioning(&bucketName)
+	_, versioningConfigurationOut := GetBucketVersioning(S3MemEndpointsID, &bucketName)
 	assert.NotNil(t, versioningConfigurationOut)
 	assert.Equal(t, s3.MFADeleteEnabled, versioningConfigurationOut.MFADelete)
 }
@@ -78,7 +78,7 @@ func TestPutBucketVersioningRequestMFAEnable(t *testing.T) {
 func TestPutBucketVersioningRequestMFADisabled(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 
 	//Request a client
 	client := New(S3MemTestConfig)
@@ -95,7 +95,7 @@ func TestPutBucketVersioningRequestMFADisabled(t *testing.T) {
 	//Assert the result
 	assert.NoError(t, err)
 	assert.NotNil(t, putBucketVersioningOutput)
-	_, versioningConfigurationOut := GetBucketVersioning(&bucketName)
+	_, versioningConfigurationOut := GetBucketVersioning(S3MemEndpointsID, &bucketName)
 	assert.NotNil(t, versioningConfigurationOut)
 	assert.Equal(t, s3.MFADeleteDisabled, versioningConfigurationOut.MFADelete)
 }
@@ -103,7 +103,7 @@ func TestPutBucketVersioningRequestMFADisabled(t *testing.T) {
 func TestPutBucketVersioningRequestStatusEnabled(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 
 	//Request a client
 	client := New(S3MemTestConfig)
@@ -120,7 +120,7 @@ func TestPutBucketVersioningRequestStatusEnabled(t *testing.T) {
 	//Assert the result
 	assert.NoError(t, err)
 	assert.NotNil(t, putBucketVersioningOutput)
-	_, versioningConfigurationOut := GetBucketVersioning(&bucketName)
+	_, versioningConfigurationOut := GetBucketVersioning(S3MemEndpointsID, &bucketName)
 	assert.NotNil(t, versioningConfigurationOut)
 	assert.Equal(t, s3.BucketVersioningStatusEnabled, versioningConfigurationOut.Status)
 }
@@ -128,7 +128,7 @@ func TestPutBucketVersioningRequestStatusEnabled(t *testing.T) {
 func TestPutBucketVersioningRequestStatusSuspended(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 
 	//Request a client
 	client := New(S3MemTestConfig)
@@ -145,7 +145,7 @@ func TestPutBucketVersioningRequestStatusSuspended(t *testing.T) {
 	//Assert the result
 	assert.NoError(t, err)
 	assert.NotNil(t, putBucketVersioningOutput)
-	_, versioningConfigurationOut := GetBucketVersioning(&bucketName)
+	_, versioningConfigurationOut := GetBucketVersioning(S3MemEndpointsID, &bucketName)
 	assert.NotNil(t, versioningConfigurationOut)
 	assert.Equal(t, s3.BucketVersioningStatusSuspended, versioningConfigurationOut.Status)
 }

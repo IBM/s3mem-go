@@ -46,11 +46,11 @@ func (c *Client) PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest 
 }
 
 func putObject(req *aws.Request) {
-	if !IsBucketExist(req.Params.(*s3.PutObjectInput).Bucket) {
+	if !IsBucketExist(req.Metadata.Endpoint, req.Params.(*s3.PutObjectInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.PutObjectInput).Bucket, nil, nil)
 		return
 	}
-	_, _, err := PutObject(req.Params.(*s3.PutObjectInput).Bucket, req.Params.(*s3.PutObjectInput).Key, req.Params.(*s3.PutObjectInput).Body)
+	_, _, err := PutObject(req.Metadata.Endpoint, req.Params.(*s3.PutObjectInput).Bucket, req.Params.(*s3.PutObjectInput).Key, req.Params.(*s3.PutObjectInput).Body)
 	if err != nil {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchUpload, "", nil, req.Params.(*s3.PutObjectInput).Bucket, req.Params.(*s3.PutObjectInput).Key, nil)
 	}

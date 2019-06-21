@@ -31,7 +31,7 @@ import (
 func TestDeleteBucketRequest(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 	//Request a client
 	client := New(S3MemTestConfig)
 	//Create the request
@@ -41,16 +41,16 @@ func TestDeleteBucketRequest(t *testing.T) {
 	//Send the request
 	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
-	bucketGet := GetBucket(&bucketName)
+	bucketGet := GetBucket(S3MemEndpointsID, &bucketName)
 	assert.Nil(t, bucketGet)
 }
 
 func TestDeleteNotEmptyBucket(t *testing.T) {
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey := "my-object"
-	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
+	PutObject(S3MemEndpointsID, &bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
 	client := New(S3MemTestConfig)
 	//Create the request

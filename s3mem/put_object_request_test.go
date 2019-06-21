@@ -30,7 +30,7 @@ import (
 func TestPutObjectRequest(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 	//Adding an Object
 	objectKey := "my-object"
 	content := "test content"
@@ -46,7 +46,7 @@ func TestPutObjectRequest(t *testing.T) {
 	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
 
-	object, _, err := GetObject(&bucketName, &objectKey, nil)
+	object, _, err := GetObject(S3MemEndpointsID, &bucketName, &objectKey, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, object)
 
@@ -56,9 +56,9 @@ func TestPutObjectRequest(t *testing.T) {
 func TestPutObjectRequestWithVersioningBucket(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
 	//Make bucket versioning
-	PutBucketVersioning(&bucketName, nil, &s3.VersioningConfiguration{
+	PutBucketVersioning(S3MemEndpointsID, &bucketName, nil, &s3.VersioningConfiguration{
 		Status: s3.BucketVersioningStatusEnabled,
 	})
 	//Adding an Object
@@ -76,7 +76,7 @@ func TestPutObjectRequestWithVersioningBucket(t *testing.T) {
 	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
 
-	object1, _, err := GetObject(&bucketName, &objectKey, nil)
+	object1, _, err := GetObject(S3MemEndpointsID, &bucketName, &objectKey, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, object1)
 
@@ -95,7 +95,7 @@ func TestPutObjectRequestWithVersioningBucket(t *testing.T) {
 	assert.NoError(t, err)
 
 	//Get last version
-	object2, versionID, err := GetObject(&bucketName, &objectKey, nil)
+	object2, versionID, err := GetObject(S3MemEndpointsID, &bucketName, &objectKey, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, object2)
 	assert.Equal(t, "1", *versionID)
@@ -104,7 +104,7 @@ func TestPutObjectRequestWithVersioningBucket(t *testing.T) {
 
 	//Get Specific version
 	versionIDS := "0"
-	object3, versionID, err := GetObject(&bucketName, &objectKey, &versionIDS)
+	object3, versionID, err := GetObject(S3MemEndpointsID, &bucketName, &objectKey, &versionIDS)
 	assert.NoError(t, err)
 	assert.NotNil(t, object3)
 	assert.Equal(t, content1, string(object1.Content))

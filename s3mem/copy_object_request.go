@@ -47,16 +47,16 @@ func (c *Client) CopyObjectRequest(input *s3.CopyObjectInput) s3.CopyObjectReque
 }
 
 func copyObject(req *aws.Request) {
-	if !IsBucketExist(req.Params.(*s3.CopyObjectInput).Bucket) {
+	if !IsBucketExist(req.Metadata.Endpoint, req.Params.(*s3.CopyObjectInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.CopyObjectInput).Bucket, nil, nil)
 		return
 	}
 	bucket, key, err := ParseObjectURL(req.Params.(*s3.CopyObjectInput).CopySource)
-	obj, versionId, err := GetObject(bucket, key, nil)
+	obj, versionId, err := GetObject(req.Metadata.Endpoint, bucket, key, nil)
 	if err != nil {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, nil)
 	}
-	objDest, destVersionId, err := PutObject(req.Params.(*s3.CopyObjectInput).Bucket, key, strings.NewReader(string(obj.Content)))
+	objDest, destVersionId, err := PutObject(req.Metadata.Endpoint, req.Params.(*s3.CopyObjectInput).Bucket, key, strings.NewReader(string(obj.Content)))
 	if err != nil {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchUpload, "", nil, req.Params.(*s3.CopyObjectInput).Bucket, key, nil)
 	}

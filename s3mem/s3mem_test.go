@@ -41,12 +41,22 @@ func init() {
 		Logger:      aws.NewDefaultLogger(),
 		Credentials: aws.NewStaticCredentialsProvider("fake", "fake", ""),
 	}
+	defaultResolver := endpoints.NewDefaultResolver()
+	myCustomResolver := func(service, region string) (aws.Endpoint, error) {
+		if service == s3.EndpointsID {
+			return aws.Endpoint{
+				URL: S3MemEndpointsID,
+			}, nil
+		}
+		return defaultResolver.ResolveEndpoint(service, region)
+	}
+	S3MemTestConfig.EndpointResolver = aws.EndpointResolverFunc(myCustomResolver)
 }
 
 func TestNewClient(t *testing.T) {
-	S3MemBuckets.Mux.Lock()
-	defer S3MemBuckets.Mux.Unlock()
-	l := len(S3MemBuckets.Buckets)
+	S3MemDatastores.Datastores[S3MemEndpointsID].Mux.Lock()
+	defer S3MemDatastores.Datastores[S3MemEndpointsID].Mux.Unlock()
+	l := len(S3MemDatastores.Datastores[S3MemEndpointsID].Buckets)
 	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
