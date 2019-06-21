@@ -46,11 +46,11 @@ func (c *Client) GetBucketVersioningRequest(input *s3.GetBucketVersioningInput) 
 }
 
 func getBucketVersioning(req *aws.Request) {
-	if !IsBucketExist(req.Params.(*s3.GetBucketVersioningInput).Bucket) {
+	if !IsBucketExist(req.Metadata.Endpoint, req.Params.(*s3.GetBucketVersioningInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.GetBucketVersioningInput).Bucket, nil, nil)
 		return
 	}
-	_, obj := GetBucketVersioning(req.Params.(*s3.GetBucketVersioningInput).Bucket)
+	_, obj := GetBucketVersioning(req.Metadata.Endpoint, req.Params.(*s3.GetBucketVersioningInput).Bucket)
 	if obj == nil {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.GetBucketVersioningInput).Bucket, nil, nil)
 		return

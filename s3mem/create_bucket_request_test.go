@@ -40,7 +40,7 @@ func TestCreateBucketRequest(t *testing.T) {
 	createBucketsOutput, err := req.Send(context.Background())
 	//Assert the result
 	assert.NoError(t, err)
-	bucketGet := GetBucket(&bucketName)
+	bucketGet := GetBucket(S3MemEndpointsID, &bucketName)
 	assert.NotNil(t, bucketGet)
 	assert.Equal(t, bucketName, *bucketGet.Name)
 	assert.Equal(t, bucketName, *createBucketsOutput.Location)

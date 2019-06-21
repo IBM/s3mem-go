@@ -50,7 +50,7 @@ func (c *Client) CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucke
 }
 
 func createBucket(req *aws.Request) {
-	if IsBucketExist(req.Params.(*s3.CreateBucketInput).Bucket) {
+	if IsBucketExist(req.Metadata.Endpoint, req.Params.(*s3.CreateBucketInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeBucketAlreadyExists, "", nil, req.Params.(*s3.CreateBucketInput).Bucket, nil, nil)
 		return
 	}
@@ -59,7 +59,7 @@ func createBucket(req *aws.Request) {
 		CreationDate: &tc,
 		Name:         req.Params.(*s3.CreateBucketInput).Bucket,
 	}
-	CreateBucket(bucket)
+	CreateBucket(req.Metadata.Endpoint, bucket)
 	//This is needed just to logResponse when requested
 	body, _ := json.MarshalIndent(req.Data.(*s3.CreateBucketOutput), "", "  ")
 	req.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(body))

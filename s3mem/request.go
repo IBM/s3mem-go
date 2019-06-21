@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 func (c *Client) NewRequest(operation *aws.Operation, params interface{}, data interface{}) *aws.Request {
@@ -47,9 +48,9 @@ func (c *Client) NewRequest(operation *aws.Operation, params interface{}, data i
 	// 	cfg.Region = endpoints.UsEast1RegionID
 	// }
 
-	if cfg.EndpointResolver == nil {
-		cfg.EndpointResolver = endpoints.NewDefaultResolver()
-	}
+	// if cfg.EndpointResolver == nil {
+	// 	cfg.EndpointResolver = NewDefaultResolver()
+	// }
 
 	// TODO need better way of handling this error... NewRequest should return error.
 	endpoint, err := cfg.EndpointResolver.ResolveEndpoint(metadata.EndpointsID, cfg.Region)
@@ -96,4 +97,18 @@ func (c *Client) NewRequest(operation *aws.Operation, params interface{}, data i
 	r.SetBufferBody([]byte{})
 
 	return r
+}
+
+func NewDefaultResolver() aws.EndpointResolver {
+	defaultResolver := endpoints.NewDefaultResolver()
+	myCustomResolver := func(service, region string) (aws.Endpoint, error) {
+		if service == s3.EndpointsID {
+			return aws.Endpoint{
+				URL: S3MemEndpointsID,
+			}, nil
+		}
+		return defaultResolver.ResolveEndpoint(service, region)
+	}
+	endpointResolver := aws.EndpointResolverFunc(myCustomResolver)
+	return endpointResolver
 }

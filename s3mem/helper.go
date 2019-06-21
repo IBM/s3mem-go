@@ -32,58 +32,89 @@ import (
 )
 
 //Clear clears memory buckets and objects
-func Clear() {
-	S3MemBuckets.Buckets = make(map[string]*Bucket, 0)
+func Clear(datastore string) {
+	S3MemDatastores.Datastores[datastore].Buckets = make(map[string]*Bucket, 0)
+}
+
+func CreateDatastore(datastore string) *Buckets {
+	datastore = getDatastore(datastore)
+	if _, ok := S3MemDatastores.Datastores[datastore]; !ok {
+		S3MemDatastores.Datastores[datastore] = &Buckets{
+			Buckets: make(map[string]*Bucket, 0),
+		}
+	}
+	return S3MemDatastores.Datastores[datastore]
+}
+
+func getDatastore(datastore string) string {
+	if datastore == "" {
+		return S3MemEndpointsID
+	}
+	return datastore
 }
 
 //GetBucket gets a bucket from memory
-func GetBucket(bucket *string) *s3.Bucket {
-	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
+//The default datastore is S3MemEndpointsID
+func GetBucket(datastore string, bucket *string) *s3.Bucket {
+	s3memBuckets := CreateDatastore(datastore)
+	if _, ok := s3memBuckets.Buckets[*bucket]; !ok {
 		return nil
 	}
-	return S3MemBuckets.Buckets[*bucket].Bucket
+	return s3memBuckets.Buckets[*bucket].Bucket
 }
 
 //IsBucketExist returns true if bucket exists
-func IsBucketExist(bucket *string) bool {
-	_, ok := S3MemBuckets.Buckets[*bucket]
+//The default datastore is S3MemEndpointsID
+func IsBucketExist(datastore string, bucket *string) bool {
+	s3memBuckets := CreateDatastore(datastore)
+	_, ok := s3memBuckets.Buckets[*bucket]
 	return ok
 }
 
 //IsBucketEmpty returns true if bucket is empty
-func IsBucketEmpty(bucket *string) bool {
-	return len(S3MemBuckets.Buckets[*bucket].Objects) == 0
+//The default datastore is S3MemEndpointsID
+func IsBucketEmpty(datastore string, bucket *string) bool {
+	s3memBuckets := CreateDatastore(datastore)
+	return len(s3memBuckets.Buckets[*bucket].Objects) == 0
 }
 
 //CreateBucket adds a bucket in memory
-func CreateBucket(b *s3.Bucket) {
+//The default datastore is S3MemEndpointsID
+func CreateBucket(datastore string, b *s3.Bucket) {
+	s3memBuckets := CreateDatastore(datastore)
 	tc := time.Now()
 	b.CreationDate = &tc
-	S3MemBuckets.Buckets[*b.Name] = &Bucket{
+	s3memBuckets.Buckets[*b.Name] = &Bucket{
 		Bucket:  b,
 		Objects: make(map[string]*VersionedObjects, 0),
 	}
 }
 
 //DeleteBucket deletes an object from memory
-func DeleteBucket(bucket *string) {
-	delete(S3MemBuckets.Buckets, *bucket)
+//The default datastore is S3MemEndpointsID
+func DeleteBucket(datastore string, bucket *string) {
+	s3memBuckets := CreateDatastore(datastore)
+	delete(s3memBuckets.Buckets, *bucket)
 }
 
 //IsObjectExist returns true if object exists
-func IsObjectExist(bucket *string, key *string) bool {
-	_, ok := S3MemBuckets.Buckets[*bucket].Objects[*key]
+//The default datastore is S3MemEndpointsID
+func IsObjectExist(datastore string, bucket *string, key *string) bool {
+	s3memBuckets := CreateDatastore(datastore)
+	_, ok := s3memBuckets.Buckets[*bucket].Objects[*key]
 	return ok
 }
 
 //PutObject adds an object in memory return the object.
+//The default datastore is S3MemEndpointsID
 //Raise an error if a failure to read the body occurs
-func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, *string, error) {
-	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
-		S3MemBuckets.Buckets[*bucket].Objects = make(map[string]*VersionedObjects, 0)
+func PutObject(datastore string, bucket *string, key *string, body io.ReadSeeker) (*Object, *string, error) {
+	s3memBuckets := CreateDatastore(datastore)
+	if _, ok := s3memBuckets.Buckets[*bucket]; !ok {
+		s3memBuckets.Buckets[*bucket].Objects = make(map[string]*VersionedObjects, 0)
 	}
-	if _, ok := S3MemBuckets.Buckets[*bucket].Objects[*key]; !ok {
-		S3MemBuckets.Buckets[*bucket].Objects[*key] = &VersionedObjects{
+	if _, ok := s3memBuckets.Buckets[*bucket].Objects[*key]; !ok {
+		s3memBuckets.Buckets[*bucket].Objects[*key] = &VersionedObjects{
 			VersionedObjects: make([]*Object, 0),
 		}
 	}
@@ -100,32 +131,34 @@ func PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, *strin
 		},
 		Content: content,
 	}
-	versioning := S3MemBuckets.Buckets[*bucket].VersioningConfiguration
+	versioning := s3memBuckets.Buckets[*bucket].VersioningConfiguration
 	if versioning != nil && versioning.Status == s3.BucketVersioningStatusEnabled {
-		S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
+		s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
 	} else {
-		if len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) == 0 {
-			S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
+		if len(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) == 0 {
+			s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, obj)
 		} else {
-			S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[0] = obj
+			s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[0] = obj
 		}
 	}
-	versionId := strconv.Itoa(len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) - 1)
+	versionId := strconv.Itoa(len(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) - 1)
 	return obj, &versionId, nil
 }
 
 //GetObject gets an object from memory return the Object and its versionID
+//The default datastore is S3MemEndpointsID
 //Raises an error the bucket or object doesn't exists or if the requested object is deleted,
-func GetObject(bucket *string, key *string, versionIDS *string) (object *Object, versionIDSOut *string, s3memerror s3memerr.S3MemError) {
-	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
+func GetObject(datastore string, bucket *string, key *string, versionIDS *string) (object *Object, versionIDSOut *string, s3memerror s3memerr.S3MemError) {
+	s3memBuckets := CreateDatastore(datastore)
+	if _, ok := s3memBuckets.Buckets[*bucket]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, bucket, key, versionIDS)
 	}
-	if _, ok := S3MemBuckets.Buckets[*bucket].Objects[*key]; !ok {
+	if _, ok := s3memBuckets.Buckets[*bucket].Objects[*key]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, versionIDS)
 	}
-	l := len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects)
+	l := len(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects)
 	if l > 0 {
-		versioning := S3MemBuckets.Buckets[*bucket].VersioningConfiguration
+		versioning := s3memBuckets.Buckets[*bucket].VersioningConfiguration
 		if versioning != nil && versioning.Status == s3.BucketVersioningStatusEnabled {
 			if versionIDS != nil {
 				versionID, err := strconv.Atoi(*versionIDS)
@@ -135,17 +168,17 @@ func GetObject(bucket *string, key *string, versionIDS *string) (object *Object,
 				if versionID >= l {
 					return nil, nil, s3memerr.NewError(s3memerr.ErrCodeNoSuchVersion, "", nil, bucket, key, versionIDS)
 				}
-				object = S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[versionID]
+				object = s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[versionID]
 				versionIDSOut = versionIDS
 				s3memerror = nil
 			} else {
-				object = S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[l-1]
+				object = s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[l-1]
 				versionID := strconv.Itoa(l - 1)
 				versionIDSOut = &versionID
 				s3memerror = nil
 			}
 		} else {
-			object = S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[l-1]
+			object = s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[l-1]
 			versionID := strconv.Itoa(l - 1)
 			versionIDSOut = &versionID
 			s3memerror = nil
@@ -159,16 +192,18 @@ func GetObject(bucket *string, key *string, versionIDS *string) (object *Object,
 }
 
 //DeleteObject Deletes an object
-func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarkerOut *bool, deleteMarkerVersionIDOut *string, err s3memerr.S3MemError) {
-	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
+//The default datastore is S3MemEndpointsID
+func DeleteObject(datastore string, bucket *string, key *string, versionIDS *string) (deleteMarkerOut *bool, deleteMarkerVersionIDOut *string, err s3memerr.S3MemError) {
+	s3memBuckets := CreateDatastore(datastore)
+	if _, ok := s3memBuckets.Buckets[*bucket]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", err, bucket, key, versionIDS)
 	}
-	if _, ok := S3MemBuckets.Buckets[*bucket].Objects[*key]; !ok {
+	if _, ok := s3memBuckets.Buckets[*bucket].Objects[*key]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchKey, "", nil, bucket, key, versionIDS)
 	}
-	l := len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects)
+	l := len(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects)
 	if l > 0 {
-		versioning := S3MemBuckets.Buckets[*bucket].VersioningConfiguration
+		versioning := s3memBuckets.Buckets[*bucket].VersioningConfiguration
 		if versioning != nil && versioning.Status == s3.BucketVersioningStatusEnabled {
 			deleteMarker := true
 			if versionIDS != nil {
@@ -178,14 +213,14 @@ func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarker
 					return nil, nil, s3memerr.NewError(s3memerr.ErrCodeNoSuchVersion, "Version not a number", err, bucket, key, versionIDS)
 				}
 				if l-1 == versionID {
-					S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:l-1]
+					s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:l-1]
 				} else {
-					S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:versionID], S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[versionID+1:]...)
+					s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:versionID], s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[versionID+1:]...)
 				}
 			} else {
 				//if version not provided then add a marker object for the same version with no data
 				deleteMarker = false
-				currentVersionedObject := S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[l-1]
+				currentVersionedObject := s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[l-1]
 				versionID := strconv.Itoa(l - 1)
 				deletedObject := &Object{
 					DeletedObject: &s3.DeletedObject{
@@ -194,35 +229,38 @@ func DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarker
 						VersionId:    &versionID,
 					},
 				}
-				S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, deletedObject)
-				deleteMarkerVersionID := strconv.Itoa(len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) - 1)
+				s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = append(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects, deletedObject)
+				deleteMarkerVersionID := strconv.Itoa(len(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) - 1)
 				deleteMarkerVersionIDOut = &deleteMarkerVersionID
 				deletedObject.DeletedObject.DeleteMarkerVersionId = deleteMarkerVersionIDOut
 			}
 			deleteMarkerOut = &deleteMarker
 		} else {
-			S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:l-1]
+			s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects = s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects[:l-1]
 		}
 	}
-	if len(S3MemBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) == 0 {
-		delete(S3MemBuckets.Buckets[*bucket].Objects, *key)
+	if len(s3memBuckets.Buckets[*bucket].Objects[*key].VersionedObjects) == 0 {
+		delete(s3memBuckets.Buckets[*bucket].Objects, *key)
 	}
 	return deleteMarkerOut, deleteMarkerVersionIDOut, nil
 }
 
 //PutBucketVersioning Sets the bucket in versionning mode
-func PutBucketVersioning(bucket *string, mfa *string, versioningConfiguration *s3.VersioningConfiguration) error {
-	S3MemBuckets.Buckets[*bucket].MFA = mfa
-	S3MemBuckets.Buckets[*bucket].VersioningConfiguration = versioningConfiguration
+//The default datastore is S3MemEndpointsID
+func PutBucketVersioning(datastore string, bucket *string, mfa *string, versioningConfiguration *s3.VersioningConfiguration) error {
+	s3memBuckets := CreateDatastore(datastore)
+	s3memBuckets.Buckets[*bucket].MFA = mfa
+	s3memBuckets.Buckets[*bucket].VersioningConfiguration = versioningConfiguration
 	return nil
 }
 
 //GetBucketVersioning gets the versioning configuration.
-func GetBucketVersioning(bucket *string) (*string, *s3.VersioningConfiguration) {
-	if _, ok := S3MemBuckets.Buckets[*bucket]; !ok {
+func GetBucketVersioning(datastore string, bucket *string) (*string, *s3.VersioningConfiguration) {
+	s3memBuckets := CreateDatastore(datastore)
+	if _, ok := s3memBuckets.Buckets[*bucket]; !ok {
 		return nil, nil
 	}
-	return S3MemBuckets.Buckets[*bucket].MFA, S3MemBuckets.Buckets[*bucket].VersioningConfiguration
+	return s3memBuckets.Buckets[*bucket].MFA, s3memBuckets.Buckets[*bucket].VersioningConfiguration
 }
 
 func CreateUser(canonicalID, email *string) error {

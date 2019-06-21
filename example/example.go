@@ -26,6 +26,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/s3iface"
 )
 
+const MyURLEndpoint = "https://my-s3-target.mycompany.com"
+
 func GetObject(client s3iface.ClientAPI, bucket *string, key *string) ([]byte, error) {
 	//Create a request
 	req := client.GetObjectRequest(&s3.GetObjectInput{
