@@ -89,6 +89,8 @@ func TestGetObjectWithDefaultEndpoint(t *testing.T) {
 	//Assert the result
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(b))
+	//Free up memory
+	defaultS3MemService.DeleteDefaultS3MemService()
 }
 
 func TestGetObjectWithLog(t *testing.T) {
@@ -144,8 +146,8 @@ func TestListBucketsRequest(t *testing.T) {
 func TestListBucketsRequestWithLock(t *testing.T) {
 	//Need to lock for testing as tests are running concurrently
 	//and meanwhile another running test could change the stored buckets
-	s3mem.S3Store.S3MemServices[MyURLEndpoint].Mux.Lock()
-	defer s3mem.S3Store.S3MemServices[MyURLEndpoint].Mux.Unlock()
+	MyS3MemService.Lock()
+	defer MyS3MemService.Unlock()
 	//Adding bucket directly in mem to prepare the test.
 	bucket0 := strings.ToLower(t.Name() + "0")
 	bucket1 := strings.ToLower(t.Name() + "1")
