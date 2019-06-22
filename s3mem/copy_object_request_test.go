@@ -30,15 +30,15 @@ import (
 func TestCopyObject(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Adding bucket directly in mem to prepare the test.
 	bucketNameDest := strings.ToLower(t.Name() + "-dest")
-	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketNameDest})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketNameDest})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey := "my-object"
 	content := "test content"
 	source := bucketName + "/" + objectKey
-	_, sourceVerionId, err := PutObject(S3MemEndpointsID, &bucketName, &objectKey, strings.NewReader(string(content)))
+	_, sourceVerionId, err := S3MemTestService.PutObject(&bucketName, &objectKey, strings.NewReader(string(content)))
 	assert.NoError(t, err)
 	//Request a client
 	client := New(S3MemTestConfig)
@@ -49,7 +49,7 @@ func TestCopyObject(t *testing.T) {
 	objOut, err := req.Send(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, sourceVerionId, objOut.CopySourceVersionId)
-	obj, _, err := GetObject(S3MemEndpointsID, &bucketNameDest, &objectKey, nil)
+	obj, _, err := S3MemTestService.GetObject(&bucketNameDest, &objectKey, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, objectKey, *obj.Object.Key)
 }

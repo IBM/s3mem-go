@@ -46,15 +46,16 @@ func (c *Client) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucke
 }
 
 func deleteBucket(req *aws.Request) {
-	if !IsBucketExist(req.Metadata.Endpoint, req.Params.(*s3.DeleteBucketInput).Bucket) {
+	S3MemService := GetS3MemService(req.Metadata.Endpoint)
+	if !S3MemService.IsBucketExist(req.Params.(*s3.DeleteBucketInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.DeleteBucketInput).Bucket, nil, nil)
 		return
 	}
-	if !IsBucketEmpty(req.Metadata.Endpoint, req.Params.(*s3.DeleteBucketInput).Bucket) {
+	if !S3MemService.IsBucketEmpty(req.Params.(*s3.DeleteBucketInput).Bucket) {
 		req.Error = s3memerr.NewError(s3memerr.ErrCodeBucketNotEmpty, "", nil, req.Params.(*s3.DeleteBucketInput).Bucket, nil, nil)
 		return
 	}
-	DeleteBucket(req.Metadata.Endpoint, req.Params.(*s3.DeleteBucketInput).Bucket)
+	S3MemService.DeleteBucket(req.Params.(*s3.DeleteBucketInput).Bucket)
 	//This is needed just to logResponse when requested
 	body, _ := json.MarshalIndent(req.Data.(*s3.DeleteBucketOutput), "", "  ")
 	req.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(body))

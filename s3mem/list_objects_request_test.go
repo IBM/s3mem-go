@@ -29,19 +29,19 @@ import (
 func TestListObjectssRequest(t *testing.T) {
 	//Need to lock for testing as tests are running concurrently
 	//and meanwhile another running test could change the stored buckets
-	S3MemDatastores.Datastores[S3MemEndpointsID].Mux.Lock()
-	defer S3MemDatastores.Datastores[S3MemEndpointsID].Mux.Unlock()
+	S3Store.S3MemServices[S3MemEndpointsID].Mux.Lock()
+	defer S3Store.S3MemServices[S3MemEndpointsID].Mux.Unlock()
 
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey1 := "1-my-object"
 	content1 := "test content 1"
-	PutObject(S3MemEndpointsID, &bucketName, &objectKey1, strings.NewReader(string(content1)))
+	S3MemTestService.PutObject(&bucketName, &objectKey1, strings.NewReader(string(content1)))
 	objectKey2 := "2-my-object"
 	content2 := "test content 2"
-	PutObject(S3MemEndpointsID, &bucketName, &objectKey2, strings.NewReader(string(content2)))
+	S3MemTestService.PutObject(&bucketName, &objectKey2, strings.NewReader(string(content2)))
 
 	//Request a client
 	client := New(S3MemTestConfig)

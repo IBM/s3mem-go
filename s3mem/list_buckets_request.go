@@ -50,7 +50,7 @@ func listBuckets(req *aws.Request) {
 		return
 	}
 	req.Data.(*s3.ListBucketsOutput).Buckets = make([]s3.Bucket, 0)
-	s3memBuckets := S3MemDatastores.Datastores[req.Metadata.Endpoint]
+	s3memBuckets := S3Store.S3MemServices[req.Metadata.Endpoint]
 	var keys []string
 	for k := range s3memBuckets.Buckets {
 		keys = append(keys, k)

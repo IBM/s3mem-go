@@ -31,13 +31,13 @@ import (
 func TestDeleteObjectsRequest(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey1 := "my-object1"
-	PutObject(S3MemEndpointsID, &bucketName, &objectKey1, strings.NewReader(string("test contents")))
+	S3MemTestService.PutObject(&bucketName, &objectKey1, strings.NewReader(string("test contents")))
 	//Adding an Object directly in mem to prepare the test.
 	objectKey2 := "my-object2"
-	PutObject(S3MemEndpointsID, &bucketName, &objectKey2, strings.NewReader(string("test contents")))
+	S3MemTestService.PutObject(&bucketName, &objectKey2, strings.NewReader(string("test contents")))
 	//Request a client
 	client := New(S3MemTestConfig)
 	versionId := "1"
@@ -54,10 +54,10 @@ func TestDeleteObjectsRequest(t *testing.T) {
 	//Send the request
 	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
-	object1, _, err := GetObject(S3MemEndpointsID, &bucketName, &objectKey1, nil)
+	object1, _, err := S3MemTestService.GetObject(&bucketName, &objectKey1, nil)
 	assert.Error(t, err)
 	assert.Nil(t, object1)
-	object2, _, err := GetObject(S3MemEndpointsID, &bucketName, &objectKey2, nil)
+	object2, _, err := S3MemTestService.GetObject(&bucketName, &objectKey2, nil)
 	assert.Error(t, err)
 	assert.Nil(t, object2)
 }
@@ -65,10 +65,10 @@ func TestDeleteObjectsRequest(t *testing.T) {
 func TestDeleteObjectsRequestBucketNotExists(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey1 := "my-object1"
-	PutObject(S3MemEndpointsID, &bucketName, &objectKey1, strings.NewReader(string("test contents")))
+	S3MemTestService.PutObject(&bucketName, &objectKey1, strings.NewReader(string("test contents")))
 	//Request a client
 	client := New(S3MemTestConfig)
 	versionId := "1"

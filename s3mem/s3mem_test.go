@@ -33,6 +33,7 @@ import (
 )
 
 var S3MemTestConfig aws.Config
+var S3MemTestService *S3MemService
 
 func init() {
 	S3MemTestConfig = aws.Config{
@@ -51,12 +52,14 @@ func init() {
 		return defaultResolver.ResolveEndpoint(service, region)
 	}
 	S3MemTestConfig.EndpointResolver = aws.EndpointResolverFunc(myCustomResolver)
+
+	S3MemTestService = NewDefaultS3MemService()
 }
 
 func TestNewClient(t *testing.T) {
-	S3MemDatastores.Datastores[S3MemEndpointsID].Mux.Lock()
-	defer S3MemDatastores.Datastores[S3MemEndpointsID].Mux.Unlock()
-	l := len(S3MemDatastores.Datastores[S3MemEndpointsID].Buckets)
+	S3Store.S3MemServices[S3MemEndpointsID].Mux.Lock()
+	defer S3Store.S3MemServices[S3MemEndpointsID].Mux.Unlock()
+	l := len(S3Store.S3MemServices[S3MemEndpointsID].Buckets)
 	client := New(S3MemTestConfig)
 	//Create the request
 	req := client.ListBucketsRequest(&s3.ListBucketsInput{})
