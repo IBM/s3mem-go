@@ -29,8 +29,8 @@ import (
 func TestListBucketsRequest(t *testing.T) {
 	//Need to lock for testing as tests are running concurrently
 	//and meanwhile another running test could change the stored buckets
-	S3Store.S3MemServices[S3MemEndpointsID].Mux.Lock()
-	defer S3Store.S3MemServices[S3MemEndpointsID].Mux.Unlock()
+	S3MemTestService.Lock()
+	defer S3MemTestService.Unlock()
 	l := len(S3Store.S3MemServices[S3MemEndpointsID].Buckets)
 	//Adding bucket directly in mem to prepare the test.
 	bucket0 := strings.ToLower(t.Name() + "0")

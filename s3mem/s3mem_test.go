@@ -57,8 +57,8 @@ func init() {
 }
 
 func TestNewClient(t *testing.T) {
-	S3Store.S3MemServices[S3MemEndpointsID].Mux.Lock()
-	defer S3Store.S3MemServices[S3MemEndpointsID].Mux.Unlock()
+	S3MemTestService.Lock()
+	defer S3MemTestService.Unlock()
 	l := len(S3Store.S3MemServices[S3MemEndpointsID].Buckets)
 	client := New(S3MemTestConfig)
 	//Create the request

@@ -121,8 +121,8 @@ func TestListBucketsRequest(t *testing.T) {
 	localS3MemService := s3mem.NewS3MemService(S3MemService)
 	//Need to lock for testing as tests are running concurrently
 	//and meanwhile another running test could change the stored buckets
-	s3mem.S3Store.S3MemServices[S3MemService].Mux.Lock()
-	defer s3mem.S3Store.S3MemServices[S3MemService].Mux.Unlock()
+	localS3MemService.Lock()
+	defer localS3MemService.Unlock()
 	//Adding bucket directly in mem to prepare the test.
 	bucket0 := strings.ToLower(t.Name() + "0")
 	bucket1 := strings.ToLower(t.Name() + "1")
