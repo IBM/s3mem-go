@@ -30,16 +30,18 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem"
 )
 
+var MyS3MemService *s3mem.S3MemService
+
 func init() {
-	s3mem.CreateDatastore(MyURLEndpoint)
+	MyS3MemService = s3mem.NewS3MemService(MyURLEndpoint)
 }
 
-func getTestConfig(datastore string) aws.Config {
+func getTestConfig(S3MemService string) aws.Config {
 	defaultResolver := endpoints.NewDefaultResolver()
 	myCustomResolver := func(service, region string) (aws.Endpoint, error) {
 		if service == s3.EndpointsID {
 			return aws.Endpoint{
-				URL: datastore,
+				URL: S3MemService,
 			}, nil
 		}
 		return defaultResolver.ResolveEndpoint(service, region)
@@ -49,14 +51,15 @@ func getTestConfig(datastore string) aws.Config {
 	}
 	return config
 }
+
 func TestGetObject(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucket := strings.ToLower(t.Name())
-	s3mem.CreateBucket(MyURLEndpoint, &s3.Bucket{Name: &bucket})
+	MyS3MemService.CreateBucket(&s3.Bucket{Name: &bucket})
 	//Adding an Object directly in mem to prepare the test.
 	key := "my-object"
 	content := "test content"
-	s3mem.PutObject(MyURLEndpoint, &bucket, &key, strings.NewReader(string(content)))
+	MyS3MemService.PutObject(&bucket, &key, strings.NewReader(string(content)))
 	//Request a client
 	client := s3mem.New(getTestConfig(MyURLEndpoint))
 	//Call the method to test
@@ -71,14 +74,16 @@ func TestGetObjectWithDefaultEndpoint(t *testing.T) {
 	//Request a client
 	config := aws.Config{}
 	client := s3mem.New(config)
+	//Create default S3MemService
+	defaultS3MemService := s3mem.NewDefaultS3MemService()
 	//Adding bucket directly in mem to prepare the test.
 	bucket := strings.ToLower(t.Name())
 	// endpointResolver := config.EndpointResolver
-	s3mem.CreateBucket("", &s3.Bucket{Name: &bucket})
+	defaultS3MemService.CreateBucket(&s3.Bucket{Name: &bucket})
 	//Adding an Object directly in mem to prepare the test.
 	key := "my-object"
 	content := "test content"
-	s3mem.PutObject("", &bucket, &key, strings.NewReader(string(content)))
+	defaultS3MemService.PutObject(&bucket, &key, strings.NewReader(string(content)))
 	//Call the method to test
 	b, err := GetObject(client, &bucket, &key)
 	//Assert the result
@@ -89,11 +94,11 @@ func TestGetObjectWithDefaultEndpoint(t *testing.T) {
 func TestGetObjectWithLog(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucket := strings.ToLower(t.Name())
-	s3mem.CreateBucket(MyURLEndpoint, &s3.Bucket{Name: &bucket})
+	MyS3MemService.CreateBucket(&s3.Bucket{Name: &bucket})
 	//Adding an Object directly in mem to prepare the test.
 	key := "my-object"
 	content := "test content"
-	s3mem.PutObject(MyURLEndpoint, &bucket, &key, strings.NewReader(string(content)))
+	MyS3MemService.PutObject(&bucket, &key, strings.NewReader(string(content)))
 	config := getTestConfig(MyURLEndpoint)
 	config.LogLevel = aws.LogDebugWithHTTPBody
 	config.Logger = aws.NewDefaultLogger()
@@ -107,23 +112,23 @@ func TestGetObjectWithLog(t *testing.T) {
 }
 
 func TestListBucketsRequest(t *testing.T) {
-	//Creating a new datastore because at the end of this test
+	//Creating a new S3MemService because at the end of this test
 	//we want to test the bucket ordering and so we want a new
-	//datastore to avoid interraction with other tests.
-	datastore := strings.ToLower(t.Name())
-	s3mem.CreateDatastore(datastore)
+	//S3MemService to avoid interraction with other tests.
+	S3MemService := strings.ToLower(t.Name())
+	localS3MemService := s3mem.NewS3MemService(S3MemService)
 	//Need to lock for testing as tests are running concurrently
 	//and meanwhile another running test could change the stored buckets
-	s3mem.S3MemDatastores.Datastores[datastore].Mux.Lock()
-	defer s3mem.S3MemDatastores.Datastores[datastore].Mux.Unlock()
+	s3mem.S3Store.S3MemServices[S3MemService].Mux.Lock()
+	defer s3mem.S3Store.S3MemServices[S3MemService].Mux.Unlock()
 	//Adding bucket directly in mem to prepare the test.
 	bucket0 := strings.ToLower(t.Name() + "0")
 	bucket1 := strings.ToLower(t.Name() + "1")
-	s3mem.CreateBucket(datastore, &s3.Bucket{Name: &bucket0})
-	s3mem.CreateBucket(datastore, &s3.Bucket{Name: &bucket1})
-	l := len(s3mem.S3MemDatastores.Datastores[datastore].Buckets)
+	localS3MemService.CreateBucket(&s3.Bucket{Name: &bucket0})
+	localS3MemService.CreateBucket(&s3.Bucket{Name: &bucket1})
+	l := len(s3mem.S3Store.S3MemServices[S3MemService].Buckets)
 	//Request a client
-	client := s3mem.New(getTestConfig(datastore))
+	client := s3mem.New(getTestConfig(S3MemService))
 	//Call GetBuckets
 	buckets, err := GetBuckets(client)
 	//Assert the result
@@ -139,14 +144,14 @@ func TestListBucketsRequest(t *testing.T) {
 func TestListBucketsRequestWithLock(t *testing.T) {
 	//Need to lock for testing as tests are running concurrently
 	//and meanwhile another running test could change the stored buckets
-	s3mem.S3MemDatastores.Datastores[MyURLEndpoint].Mux.Lock()
-	defer s3mem.S3MemDatastores.Datastores[MyURLEndpoint].Mux.Unlock()
+	s3mem.S3Store.S3MemServices[MyURLEndpoint].Mux.Lock()
+	defer s3mem.S3Store.S3MemServices[MyURLEndpoint].Mux.Unlock()
 	//Adding bucket directly in mem to prepare the test.
 	bucket0 := strings.ToLower(t.Name() + "0")
 	bucket1 := strings.ToLower(t.Name() + "1")
-	s3mem.CreateBucket(MyURLEndpoint, &s3.Bucket{Name: &bucket0})
-	s3mem.CreateBucket(MyURLEndpoint, &s3.Bucket{Name: &bucket1})
-	l := len(s3mem.S3MemDatastores.Datastores[MyURLEndpoint].Buckets)
+	MyS3MemService.CreateBucket(&s3.Bucket{Name: &bucket0})
+	MyS3MemService.CreateBucket(&s3.Bucket{Name: &bucket1})
+	l := len(s3mem.S3Store.S3MemServices[MyURLEndpoint].Buckets)
 	//Request a client
 	client := s3mem.New(getTestConfig(MyURLEndpoint))
 	//Call GetBuckets

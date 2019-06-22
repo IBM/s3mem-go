@@ -30,12 +30,12 @@ import (
 func TestGetBucketVersioningRequest(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(S3MemEndpointsID, &s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 
 	mfa := "122334 13445"
 
 	//Add a VersionConfig
-	PutBucketVersioning(S3MemEndpointsID, &bucketName, &mfa, &s3.VersioningConfiguration{
+	S3MemTestService.PutBucketVersioning(&bucketName, &mfa, &s3.VersioningConfiguration{
 		MFADelete: s3.MFADeleteEnabled,
 		Status:    s3.BucketVersioningStatusEnabled,
 	})

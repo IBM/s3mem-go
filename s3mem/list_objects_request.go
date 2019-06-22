@@ -54,14 +54,15 @@ func (c *Client) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsRe
 }
 
 func listObjects(req *aws.Request) {
-	if !IsBucketExist(req.Metadata.Endpoint, req.Params.(*s3.ListObjectsInput).Bucket) {
+	S3MemService := GetS3MemService(req.Metadata.Endpoint)
+	if !S3MemService.IsBucketExist(req.Params.(*s3.ListObjectsInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.ListObjectsInput).Bucket, nil, nil)
 		return
 	}
 	req.Data.(*s3.ListObjectsOutput).Contents = make([]s3.Object, 0)
 	bucket := req.Params.(*s3.ListObjectsInput).Bucket
 	prefix := req.Params.(*s3.ListObjectsInput).Prefix
-	s3memBuckets := S3MemDatastores.Datastores[req.Metadata.Endpoint]
+	s3memBuckets := S3Store.S3MemServices[req.Metadata.Endpoint]
 	var keys []string
 	for k := range s3memBuckets.Buckets[*bucket].Objects {
 		keys = append(keys, k)

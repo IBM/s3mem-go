@@ -29,13 +29,13 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
-var S3MemDatastores Datastores
+var S3Store S3MemServices
 var S3MemUsers Users
 
 var _ s3iface.ClientAPI = (s3iface.ClientAPI)(nil)
 
 func init() {
-	S3MemDatastores.Datastores = make(map[string]*Buckets, 0)
+	S3Store.S3MemServices = make(map[string]*S3MemService, 0)
 	S3MemUsers.Users = make(map[string]*User, 0)
 	S3MemUsers.Users["admin"] = &User{
 		CanonicalID: "admin",
