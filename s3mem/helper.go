@@ -54,6 +54,10 @@ func NewS3MemService(s3service string) *S3MemService {
 	return S3Store.S3MemServices[s3service]
 }
 
+func GetDefaultS3MemService() *S3MemService {
+	return GetS3MemService(S3MemEndpointsID)
+}
+
 func GetS3MemService(s3service string) *S3MemService {
 	return S3Store.S3MemServices[s3service]
 }
