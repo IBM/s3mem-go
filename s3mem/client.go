@@ -28,10 +28,12 @@ type Client struct {
 }
 
 func New(config aws.Config) *Client {
+	if config.EndpointResolver == nil {
+		config.EndpointResolver = NewDefaultResolver()
+	}
 	svc := &Client{
 		Client: *s3.New(config),
 	}
-
 	//set handlers
 	svc.Handlers = Handlers()
 	svc.Handlers.Build.PushBackNamed(restxml.BuildHandler)

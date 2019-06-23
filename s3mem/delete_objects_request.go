@@ -50,12 +50,13 @@ func (c *Client) DeleteObjectsRequest(input *s3.DeleteObjectsInput) s3.DeleteObj
 }
 
 func deleteObjects(req *aws.Request) {
-	if !IsBucketExist(req.Params.(*s3.DeleteObjectsInput).Bucket) {
+	S3MemService := GetS3MemService(req.Metadata.Endpoint)
+	if !S3MemService.IsBucketExist(req.Params.(*s3.DeleteObjectsInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.DeleteObjectsInput).Bucket, nil, nil)
 		return
 	}
 	for _, obj := range req.Params.(*s3.DeleteObjectsInput).Delete.Objects {
-		deleteMarker, versionID, err := DeleteObject(req.Params.(*s3.DeleteObjectsInput).Bucket, obj.Key, obj.VersionId)
+		deleteMarker, versionID, err := S3MemService.DeleteObject(req.Params.(*s3.DeleteObjectsInput).Bucket, obj.Key, obj.VersionId)
 		if err != nil {
 			req.Data.(*s3.DeleteObjectsOutput).Errors = append(req.Data.(*s3.DeleteObjectsOutput).Errors, err.Convert2S3Error(obj.Key, obj.VersionId))
 		}

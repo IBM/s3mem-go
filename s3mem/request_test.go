@@ -15,32 +15,18 @@
 # limitations under the License.
 ################################################################################
 */
-
 package s3mem
 
 import (
-	"bytes"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestClientLoggerWrite(t *testing.T) {
-	logger := &logWriter{
-		Logger: aws.NewDefaultLogger(),
-		buf:    new(bytes.Buffer),
-	}
-	l := logger.buf.Len()
-	n, err := logger.Write([]byte("b"))
+func TestNewDefaultResolver(t *testing.T) {
+	resolver := NewDefaultResolver()
+	endpoint, err := resolver.ResolveEndpoint(s3.EndpointsID, "region")
 	assert.NoError(t, err)
-	assert.Equal(t, l+1, n)
+	assert.Equal(t, S3MemEndpointsID, endpoint.URL)
 }
-
-// func TestClientLoggerClose(t *testing.T) {
-// 	logger := &logWriter{
-// 		Logger: aws.NewDefaultLogger(),
-// 		buf:    new(bytes.Buffer),
-// 	}
-// 	err := logger.
-// }

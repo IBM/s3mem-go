@@ -54,20 +54,22 @@ func (c *Client) ListObjectsRequest(input *s3.ListObjectsInput) s3.ListObjectsRe
 }
 
 func listObjects(req *aws.Request) {
-	if !IsBucketExist(req.Params.(*s3.ListObjectsInput).Bucket) {
+	S3MemService := GetS3MemService(req.Metadata.Endpoint)
+	if !S3MemService.IsBucketExist(req.Params.(*s3.ListObjectsInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.ListObjectsInput).Bucket, nil, nil)
 		return
 	}
 	req.Data.(*s3.ListObjectsOutput).Contents = make([]s3.Object, 0)
 	bucket := req.Params.(*s3.ListObjectsInput).Bucket
 	prefix := req.Params.(*s3.ListObjectsInput).Prefix
+	s3memBuckets := S3Store.S3MemServices[req.Metadata.Endpoint]
 	var keys []string
-	for k := range S3MemBuckets.Buckets[*bucket].Objects {
+	for k := range s3memBuckets.Buckets[*bucket].Objects {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		obj := S3MemBuckets.Buckets[*bucket].Objects[k]
+		obj := s3memBuckets.Buckets[*bucket].Objects[k]
 		if prefix != nil {
 			if strings.HasPrefix(*obj.VersionedObjects[0].Object.Key, *prefix) {
 				req.Data.(*s3.ListObjectsOutput).Contents = append(req.Data.(*s3.ListObjectsOutput).Contents, *obj.VersionedObjects[0].Object)

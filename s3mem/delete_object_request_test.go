@@ -30,10 +30,10 @@ import (
 func TestDeleteObjectRequest(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey := "my-object"
-	PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
+	S3MemTestService.PutObject(&bucketName, &objectKey, strings.NewReader(string("test content")))
 	//Request a client
 	client := New(S3MemTestConfig)
 	//Create the request
@@ -44,7 +44,7 @@ func TestDeleteObjectRequest(t *testing.T) {
 	//Send the request
 	_, err := req.Send(context.Background())
 	assert.NoError(t, err)
-	object, _, err := GetObject(&bucketName, &objectKey, nil)
+	object, _, err := S3MemTestService.GetObject(&bucketName, &objectKey, nil)
 	assert.Error(t, err)
 	assert.Nil(t, object)
 }
@@ -52,15 +52,15 @@ func TestDeleteObjectRequest(t *testing.T) {
 func TestDeleteObjectRequestBucketVersionedThenRestore(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Make bucket versioning
-	PutBucketVersioning(&bucketName, nil, &s3.VersioningConfiguration{
+	S3MemTestService.PutBucketVersioning(&bucketName, nil, &s3.VersioningConfiguration{
 		Status: s3.BucketVersioningStatusEnabled,
 	})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey := "my-object"
 	content := "test content"
-	PutObject(&bucketName, &objectKey, strings.NewReader(content))
+	S3MemTestService.PutObject(&bucketName, &objectKey, strings.NewReader(content))
 	//Request a client
 	client := New(S3MemTestConfig)
 	//Create the request
@@ -71,7 +71,7 @@ func TestDeleteObjectRequestBucketVersionedThenRestore(t *testing.T) {
 	//Send the request
 	deleteObjectOutput, err := req.Send(context.Background())
 	assert.NoError(t, err)
-	object, _, err := GetObject(&bucketName, &objectKey, nil)
+	object, _, err := S3MemTestService.GetObject(&bucketName, &objectKey, nil)
 	assert.Error(t, err)
 	assert.Nil(t, object)
 
@@ -85,7 +85,7 @@ func TestDeleteObjectRequestBucketVersionedThenRestore(t *testing.T) {
 	_, err = req.Send(context.Background())
 	assert.NoError(t, err)
 
-	object, _, err = GetObject(&bucketName, &objectKey, nil)
+	object, _, err = S3MemTestService.GetObject(&bucketName, &objectKey, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, object)
 

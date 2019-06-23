@@ -19,11 +19,48 @@
 package s3mem
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGetDefaultS3MemServiceNotExists(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
+	GetS3MemService(strings.ToLower(t.Name()))
+	assert.Fail(t, "Panic was expected as the S3Store doesn't exist yet")
+}
+
+func TestNewS3MemServiceAlreadyExists(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
+	NewS3MemService(strings.ToLower(t.Name()))
+	NewS3MemService(strings.ToLower(t.Name()))
+	assert.Fail(t, "Panic was expected as the S3Store doesn't exist yet")
+}
+
+func TestDeleteTestSevice(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
+	s := NewTestS3MemService(t)
+	bucketName := strings.ToLower(t.Name())
+	s.CreateBucket(&s3.Bucket{Name: &bucketName})
+	s.DeleteTestS3MemService(t)
+	GetTestS3MemService(t)
+	assert.Fail(t, "Panic was expected as the S3Store doesn't exist anymore")
+}
 func TestParseObjectURL(t *testing.T) {
 	url := "bucket/folder1/folder2/key"
 	bucket, key, err := ParseObjectURL(&url)
