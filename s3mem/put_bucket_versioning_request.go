@@ -49,11 +49,12 @@ func putBucketVersioningBucketExists(req *aws.Request) {
 }
 
 func putBucketVersioning(req *aws.Request) {
-	if !IsBucketExist(req.Params.(*s3.PutBucketVersioningInput).Bucket) {
+	S3MemService := GetS3MemService(req.Metadata.Endpoint)
+	if !S3MemService.IsBucketExist(req.Params.(*s3.PutBucketVersioningInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.PutBucketVersioningInput).Bucket, nil, nil)
 		return
 	}
-	err := PutBucketVersioning(req.Params.(*s3.PutBucketVersioningInput).Bucket, req.Params.(*s3.PutBucketVersioningInput).MFA, req.Params.(*s3.PutBucketVersioningInput).VersioningConfiguration)
+	err := S3MemService.PutBucketVersioning(req.Params.(*s3.PutBucketVersioningInput).Bucket, req.Params.(*s3.PutBucketVersioningInput).MFA, req.Params.(*s3.PutBucketVersioningInput).VersioningConfiguration)
 	if err != nil {
 		req.Error = s3memerr.NewError(s3memerr.ErrCodeIllegalVersioningConfigurationException, "", nil, req.Params.(*s3.PutBucketVersioningInput).Bucket, nil, nil)
 	}

@@ -31,11 +31,11 @@ import (
 func TestGetObjectRequest(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Adding an Object directly in mem to prepare the test.
 	objectKey := "my-object"
 	content := "test content"
-	PutObject(&bucketName, &objectKey, strings.NewReader(string(content)))
+	S3MemTestService.PutObject(&bucketName, &objectKey, strings.NewReader(string(content)))
 	//Request a client
 	client := New(S3MemTestConfig)
 	//Create the request
@@ -58,17 +58,17 @@ func TestGetObjectRequest(t *testing.T) {
 func TestGetObjectRequestWithVersioningBucket(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucketName := strings.ToLower(t.Name())
-	CreateBucket(&s3.Bucket{Name: &bucketName})
+	S3MemTestService.CreateBucket(&s3.Bucket{Name: &bucketName})
 	//Make bucket versioning
-	PutBucketVersioning(&bucketName, nil, &s3.VersioningConfiguration{
+	S3MemTestService.PutBucketVersioning(&bucketName, nil, &s3.VersioningConfiguration{
 		Status: s3.BucketVersioningStatusEnabled,
 	})
 	//Adding an Object
 	objectKey := "1-my-object"
 	content1 := "test content 1"
-	PutObject(&bucketName, &objectKey, strings.NewReader(string(content1)))
+	S3MemTestService.PutObject(&bucketName, &objectKey, strings.NewReader(string(content1)))
 	content2 := "test content 2"
-	PutObject(&bucketName, &objectKey, strings.NewReader(string(content2)))
+	S3MemTestService.PutObject(&bucketName, &objectKey, strings.NewReader(string(content2)))
 	//Request a client
 	client := New(S3MemTestConfig)
 	//Create the request to get the last version

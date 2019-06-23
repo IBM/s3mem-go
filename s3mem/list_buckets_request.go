@@ -50,13 +50,14 @@ func listBuckets(req *aws.Request) {
 		return
 	}
 	req.Data.(*s3.ListBucketsOutput).Buckets = make([]s3.Bucket, 0)
+	s3memBuckets := S3Store.S3MemServices[req.Metadata.Endpoint]
 	var keys []string
-	for k := range S3MemBuckets.Buckets {
+	for k := range s3memBuckets.Buckets {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		req.Data.(*s3.ListBucketsOutput).Buckets = append(req.Data.(*s3.ListBucketsOutput).Buckets, *S3MemBuckets.Buckets[k].Bucket)
+		req.Data.(*s3.ListBucketsOutput).Buckets = append(req.Data.(*s3.ListBucketsOutput).Buckets, *s3memBuckets.Buckets[k].Bucket)
 	}
 	//This is needed just to logResponse when requested
 	body, _ := json.MarshalIndent(req.Data.(*s3.ListBucketsOutput), "", "  ")

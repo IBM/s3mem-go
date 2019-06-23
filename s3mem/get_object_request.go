@@ -46,10 +46,11 @@ func (c *Client) GetObjectRequest(input *s3.GetObjectInput) s3.GetObjectRequest 
 }
 
 func getObject(req *aws.Request) {
-	if !IsBucketExist(req.Params.(*s3.GetObjectInput).Bucket) {
+	S3MemService := GetS3MemService(req.Metadata.Endpoint)
+	if !S3MemService.IsBucketExist(req.Params.(*s3.GetObjectInput).Bucket) {
 		req.Error = s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, req.Params.(*s3.GetObjectInput).Bucket, nil, nil)
 	}
-	obj, versionId, err := GetObject(req.Params.(*s3.GetObjectInput).Bucket, req.Params.(*s3.GetObjectInput).Key, req.Params.(*s3.GetObjectInput).VersionId)
+	obj, versionId, err := S3MemService.GetObject(req.Params.(*s3.GetObjectInput).Bucket, req.Params.(*s3.GetObjectInput).Key, req.Params.(*s3.GetObjectInput).VersionId)
 	if err != nil {
 		req.Error = err
 		return

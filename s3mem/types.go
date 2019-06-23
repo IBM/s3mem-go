@@ -24,7 +24,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-type Buckets struct {
+type S3MemServices struct {
+	S3MemServices map[string]*S3MemService
+	Mux           sync.Mutex
+}
+
+type S3MemService struct {
+	Name    string
 	Buckets map[string]*Bucket
 	Mux     sync.Mutex
 }
