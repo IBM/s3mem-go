@@ -21,7 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
-const S3MemEndpointsID = "s3mem"
+const S3MemEndpointsID = "http://s3mem"
 
 func Handlers() aws.Handlers {
 	var handlers aws.Handlers
