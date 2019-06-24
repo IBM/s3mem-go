@@ -37,6 +37,16 @@ func TestGetDefaultS3MemServiceNotExists(t *testing.T) {
 	assert.Fail(t, "Panic was expected as the S3Store doesn't exist yet")
 }
 
+func TestGetTestS3MemServiceeNotExists(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
+	GetTestS3MemService(t)
+	assert.Fail(t, "Panic was expected as the S3Store doesn't exist yet")
+}
+
 func TestNewS3MemServiceAlreadyExists(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -45,7 +55,17 @@ func TestNewS3MemServiceAlreadyExists(t *testing.T) {
 	}()
 	NewS3MemService(strings.ToLower(t.Name()))
 	NewS3MemService(strings.ToLower(t.Name()))
-	assert.Fail(t, "Panic was expected as the S3Store doesn't exist yet")
+	assert.Fail(t, "Panic was expected as the S3Store already exists")
+}
+func TestNewTestServiceAlreadyExists(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
+	NewTestS3MemService(t)
+	NewTestS3MemService(t)
+	assert.Fail(t, "Panic was expected as the S3Store already exists")
 }
 
 func TestDeleteTestSevice(t *testing.T) {

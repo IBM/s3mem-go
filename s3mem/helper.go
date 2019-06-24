@@ -60,7 +60,7 @@ func (s *S3MemService) DeleteDefaultS3MemService() {
 }
 
 func (s *S3MemService) DeleteTestS3MemService(t *testing.T) {
-	s.DeleteS3MemService(strings.ToLower(t.Name()))
+	s.DeleteS3MemService(S3MemEndpointsID + "_" + strings.ToLower(t.Name()))
 }
 
 //Clear clears memory buckets and objects
@@ -76,7 +76,7 @@ func GetDefaultS3MemService() *S3MemService {
 }
 
 func GetTestS3MemService(t *testing.T) *S3MemService {
-	return GetS3MemService(strings.ToLower(t.Name()))
+	return GetS3MemService(S3MemEndpointsID + "_" + strings.ToLower(t.Name()))
 }
 
 func GetS3MemService(s3service string) *S3MemService {
