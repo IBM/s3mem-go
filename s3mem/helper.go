@@ -38,7 +38,7 @@ func NewDefaultS3MemService() *S3MemService {
 }
 
 func NewTestS3MemService(t *testing.T) *S3MemService {
-	return NewS3MemService(strings.ToLower(t.Name()))
+	return NewS3MemService(S3MemEndpointsID + "_" + strings.ToLower(t.Name()))
 }
 
 func NewS3MemService(s3service string) *S3MemService {
