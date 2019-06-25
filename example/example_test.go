@@ -52,6 +52,27 @@ func getTestConfig(S3MemService string) aws.Config {
 	return config
 }
 
+func TestGetObjectOwnS3Env(t *testing.T) {
+	//Create the s3 service for this test
+	myS3MemService := s3mem.NewTestS3MemService(t)
+	//Adding bucket directly in mem to prepare the test.
+	bucket := strings.ToLower(t.Name())
+	myS3MemService.CreateBucket(&s3.Bucket{Name: &bucket})
+	//Adding an Object directly in mem to prepare the test.
+	key := "my-object"
+	content := "test content"
+	myS3MemService.PutObject(&bucket, &key, strings.NewReader(string(content)))
+	//Request a client
+	client := s3mem.New(getTestConfig(myS3MemService.URL))
+	//Call the method to test
+	b, err := GetObject(client, &bucket, &key)
+	//Assert the result
+	assert.NoError(t, err)
+	assert.Equal(t, content, string(b))
+	//Delete the s3 service
+	myS3MemService.DeleteS3MemService()
+}
+
 func TestGetObject(t *testing.T) {
 	//Adding bucket directly in mem to prepare the test.
 	bucket := strings.ToLower(t.Name())
@@ -90,7 +111,7 @@ func TestGetObjectWithDefaultEndpoint(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(b))
 	//Free up memory
-	defaultS3MemService.DeleteDefaultS3MemService()
+	defaultS3MemService.DeleteS3MemService()
 }
 
 func TestGetObjectWithLog(t *testing.T) {
