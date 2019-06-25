@@ -32,74 +32,82 @@ import (
 	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
 )
 
+//NewDefaultS3MemService Creates a new service with "http://s3mem" as url
+//Panic if the S3MemService already exists
 func NewDefaultS3MemService() *S3MemService {
 	s3service := S3MemEndpointsID
 	return NewS3MemService(s3service)
 }
 
+//NewTestS3MemService Creates a new service with concanation of "http://s3mem_" and the test name
+//Panic if the S3MemService already exists
 func NewTestS3MemService(t *testing.T) *S3MemService {
 	return NewS3MemService(S3MemEndpointsID + "_" + strings.ToLower(t.Name()))
 }
 
+//NewS3MemService Create a new service with a specific url
+//Panic if the S3MemService already exists
 func NewS3MemService(s3service string) *S3MemService {
 	if s3service == "" {
 		s3service = S3MemEndpointsID
 	}
 	if _, ok := S3Store.S3MemServices[s3service]; !ok {
 		S3Store.S3MemServices[s3service] = &S3MemService{
-			Name:    s3service,
+			URL:     s3service,
 			Buckets: make(map[string]*Bucket, 0),
 		}
 		return S3Store.S3MemServices[s3service]
 	}
-	panic(fmt.Sprintf("The S3Store %s already exists", s3service))
+	panic(fmt.Sprintf("The S3MemService %s already exists", s3service))
 }
 
-func (s *S3MemService) DeleteDefaultS3MemService() {
-	s.DeleteS3MemService(S3MemEndpointsID)
+//Delete the current service
+func (s *S3MemService) DeleteS3MemService() {
+	s.deleteS3MemService(s.URL)
 }
 
-func (s *S3MemService) DeleteTestS3MemService(t *testing.T) {
-	s.DeleteS3MemService(S3MemEndpointsID + "_" + strings.ToLower(t.Name()))
-}
-
-//Clear clears memory buckets and objects
-func (s *S3MemService) DeleteS3MemService(s3service string) {
+func (s *S3MemService) deleteS3MemService(s3service string) {
 	delete(S3Store.S3MemServices, s3service)
 }
 
+//GetDefaultS3MemService Returns the s3mem service.
+//Panic if the service does not exist.
 func GetDefaultS3MemService() *S3MemService {
 	if _, ok := S3Store.S3MemServices[S3MemEndpointsID]; !ok {
-		panic(fmt.Sprintf("The S3Store %s doesn't not exist, please call NewDefaultS3MemService() before calling this function", S3MemEndpointsID))
+		panic(fmt.Sprintf("The S3MemService %s doesn't not exist, please call NewDefaultS3MemService() before calling this function", S3MemEndpointsID))
 	}
 	return GetS3MemService(S3MemEndpointsID)
 }
 
+//GetTestS3MemService Returns the s3mem service for the current test.
 func GetTestS3MemService(t *testing.T) *S3MemService {
 	return GetS3MemService(S3MemEndpointsID + "_" + strings.ToLower(t.Name()))
 }
 
+//GetS3MemService Returns the s3mem service of a specific name
 func GetS3MemService(s3service string) *S3MemService {
 	if _, ok := S3Store.S3MemServices[s3service]; !ok {
-		panic(fmt.Sprintf("The S3Store %s doesn't not exist, please call NewS3MemService(%s) before calling this function", s3service, s3service))
+		panic(fmt.Sprintf("The S3MemService %s doesn't not exist, please call NewS3MemService(%s) before calling this function", s3service, s3service))
 	}
 	return S3Store.S3MemServices[s3service]
 }
 
+//Lock Lock the access to the S3MemService
 func (s *S3MemService) Lock() {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	s3memS3service.Mux.Lock()
 }
 
+//Unlock Unlock the access to the S3MemService
 func (s *S3MemService) Unlock() {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	s3memS3service.Mux.Unlock()
 }
 
 //GetBucket gets a bucket from memory
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) GetBucket(bucket *string) *s3.Bucket {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	if _, ok := s3memS3service.Buckets[*bucket]; !ok {
 		return nil
 	}
@@ -109,7 +117,7 @@ func (s *S3MemService) GetBucket(bucket *string) *s3.Bucket {
 //IsBucketExist returns true if bucket exists
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) IsBucketExist(bucket *string) bool {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	_, ok := s3memS3service.Buckets[*bucket]
 	return ok
 }
@@ -117,14 +125,14 @@ func (s *S3MemService) IsBucketExist(bucket *string) bool {
 //IsBucketEmpty returns true if bucket is empty
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) IsBucketEmpty(bucket *string) bool {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	return len(s3memS3service.Buckets[*bucket].Objects) == 0
 }
 
 //CreateBucket adds a bucket in memory
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) CreateBucket(b *s3.Bucket) {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	tc := time.Now()
 	b.CreationDate = &tc
 	s3memS3service.Buckets[*b.Name] = &Bucket{
@@ -136,14 +144,14 @@ func (s *S3MemService) CreateBucket(b *s3.Bucket) {
 //DeleteBucket deletes an object from memory
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) DeleteBucket(bucket *string) {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	delete(s3memS3service.Buckets, *bucket)
 }
 
 //IsObjectExist returns true if object exists
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) IsObjectExist(bucket *string, key *string) bool {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	_, ok := s3memS3service.Buckets[*bucket].Objects[*key]
 	return ok
 }
@@ -152,7 +160,7 @@ func (s *S3MemService) IsObjectExist(bucket *string, key *string) bool {
 //The default s3service is S3MemEndpointsID
 //Raise an error if a failure to read the body occurs
 func (s *S3MemService) PutObject(bucket *string, key *string, body io.ReadSeeker) (*Object, *string, error) {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	if _, ok := s3memS3service.Buckets[*bucket]; !ok {
 		s3memS3service.Buckets[*bucket].Objects = make(map[string]*VersionedObjects, 0)
 	}
@@ -192,7 +200,7 @@ func (s *S3MemService) PutObject(bucket *string, key *string, body io.ReadSeeker
 //The default s3service is S3MemEndpointsID
 //Raises an error the bucket or object doesn't exists or if the requested object is deleted,
 func (s *S3MemService) GetObject(bucket *string, key *string, versionIDS *string) (object *Object, versionIDSOut *string, s3memerror s3memerr.S3MemError) {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	if _, ok := s3memS3service.Buckets[*bucket]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", nil, bucket, key, versionIDS)
 	}
@@ -237,7 +245,7 @@ func (s *S3MemService) GetObject(bucket *string, key *string, versionIDS *string
 //DeleteObject Deletes an object
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) DeleteObject(bucket *string, key *string, versionIDS *string) (deleteMarkerOut *bool, deleteMarkerVersionIDOut *string, err s3memerr.S3MemError) {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	if _, ok := s3memS3service.Buckets[*bucket]; !ok {
 		return nil, nil, s3memerr.NewError(s3.ErrCodeNoSuchBucket, "", err, bucket, key, versionIDS)
 	}
@@ -291,7 +299,7 @@ func (s *S3MemService) DeleteObject(bucket *string, key *string, versionIDS *str
 //PutBucketVersioning Sets the bucket in versionning mode
 //The default s3service is S3MemEndpointsID
 func (s *S3MemService) PutBucketVersioning(bucket *string, mfa *string, versioningConfiguration *s3.VersioningConfiguration) error {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	s3memS3service.Buckets[*bucket].MFA = mfa
 	s3memS3service.Buckets[*bucket].VersioningConfiguration = versioningConfiguration
 	return nil
@@ -299,13 +307,14 @@ func (s *S3MemService) PutBucketVersioning(bucket *string, mfa *string, versioni
 
 //GetBucketVersioning gets the versioning configuration.
 func (s *S3MemService) GetBucketVersioning(bucket *string) (*string, *s3.VersioningConfiguration) {
-	s3memS3service := GetS3MemService(s.Name)
+	s3memS3service := GetS3MemService(s.URL)
 	if _, ok := s3memS3service.Buckets[*bucket]; !ok {
 		return nil, nil
 	}
 	return s3memS3service.Buckets[*bucket].MFA, s3memS3service.Buckets[*bucket].VersioningConfiguration
 }
 
+//For future development
 func CreateUser(canonicalID, email *string) error {
 	if _, ok := S3MemUsers.Users[*canonicalID]; ok {
 		return fmt.Errorf("User %s already exists", *canonicalID)
@@ -317,6 +326,7 @@ func CreateUser(canonicalID, email *string) error {
 	return nil
 }
 
+//For future development
 func GetUser(canonicalID, email *string) (*User, error) {
 	if canonicalID == nil {
 		user, err := searchUserByEmail(email)
@@ -331,6 +341,7 @@ func GetUser(canonicalID, email *string) (*User, error) {
 	return nil, fmt.Errorf("User with email %s not found", *email)
 }
 
+//For future development
 func searchUserByEmail(email *string) (*User, error) {
 	var user *User
 	for _, v := range S3MemUsers.Users {

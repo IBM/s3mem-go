@@ -68,7 +68,7 @@ func TestNewTestServiceAlreadyExists(t *testing.T) {
 	assert.Fail(t, "Panic was expected as the S3Store already exists")
 }
 
-func TestDeleteTestSevice(t *testing.T) {
+func TestDeleteSevice(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered in f", r)
@@ -77,7 +77,7 @@ func TestDeleteTestSevice(t *testing.T) {
 	s := NewTestS3MemService(t)
 	bucketName := strings.ToLower(t.Name())
 	s.CreateBucket(&s3.Bucket{Name: &bucketName})
-	s.DeleteTestS3MemService(t)
+	s.DeleteS3MemService()
 	GetTestS3MemService(t)
 	assert.Fail(t, "Panic was expected as the S3Store doesn't exist anymore")
 }
