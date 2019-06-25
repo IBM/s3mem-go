@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.ibm.com/open-razee/s3mem-go/s3mem/s3memerr"
+	"github.com/IBM/s3mem-go/s3mem/s3memerr"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"

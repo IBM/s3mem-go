@@ -26,8 +26,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/IBM/s3mem-go/s3mem"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.ibm.com/open-razee/s3mem-go/s3mem"
 )
 
 var MyS3MemService *s3mem.S3MemService
