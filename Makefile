@@ -1,21 +1,19 @@
-###############################################################################
-# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2019. All Rights Reserved.
-# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
-# Schedule Contract with IBM Corp.
+
+################################################################################
+# Copyright 2019 IBM Corp. All Rights Reserved.
 #
-# Contributors:
-#  IBM Corporation - initial API and implementation
-###############################################################################
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# WARNING: DO NOT MODIFY. Changes may be overwritten in future updates.
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
-# The following build goals are designed to be generic for any docker image.
-# This Makefile is designed to be included in other Makefiles.
-# You must ensure that Make variables are defined for IMAGE_REPO and IMAGE_NAME.
-#
-# If you are using a Bluemix image registry, you must also define BLUEMIX_API_KEY,
-# BLUEMIX_ORG, and BLUEMIX_SPACE
-###############################################################################
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
 
 TAG_VERSION ?= `cat VERSION`+$(GIT_COMMIT)
 
