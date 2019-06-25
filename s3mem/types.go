@@ -30,7 +30,7 @@ type S3MemServices struct {
 }
 
 type S3MemService struct {
-	Name    string
+	URL     string
 	Buckets map[string]*Bucket
 	Mux     sync.Mutex
 }
