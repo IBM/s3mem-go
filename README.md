@@ -4,6 +4,14 @@ It doesn't require any server or external executable which is useful for unit-te
 It allows you to create different S3 servers.
 It is a work in progess and only some APIs are implemented (Feel free to contribute)
 
+## Build
+
+This project use [dep](https://github.com/golang/dep), running `dep ensure -v` will update the vendor directory with all dependencies.
+
+## Build after changes
+
+If you made some changes and wants to test, just run `make` in the root directory will install `dep` if not yet present and then run `dep ensure -v` to update the vendor directory. Next, it will run the `go test` and calculate the test coverage. It will also check that all files contain the copyright.
+
 ## Usage
 
 To get a client call the `s3mem.New()` function. It returns a s3iface.ClientAPI client for the s3mem in-memory implementation and you can use it as client for the AWS S3 methods.

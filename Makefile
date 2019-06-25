@@ -49,11 +49,6 @@ go-test:
 copyright-check:
 	./build-tools/copyright-check.sh
 
-.PHONY: tag
-tag::
-	$(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
-	@echo "TAG_VERSION:$(TAG_VERSION)"
-
 .PHONY: all
 all:: clean pre-req copyright-check go-test
 
