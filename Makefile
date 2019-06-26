@@ -30,7 +30,7 @@ dep-install::
 	mkdir -p $(GOPATH)/bin
 	dep version; \
 	if [ $$? -ne 0 ]; then \
-		curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh; \
+		go get -u github.com/golang/dep/cmd/dep; \
 	fi
 
 .PHONY: pre-req
