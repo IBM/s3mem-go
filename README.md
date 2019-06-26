@@ -1,16 +1,13 @@
 # s3mem
 s3mem is an in-memory S3API implementation. 
-It doesn't require any server or external executable which is useful for unit-testing.
-It allows you to create different S3 servers.
+It is a real serverless AWS S3, no need to run an external process or a docker image. It is a Go package that you use, that's it!
+It allows you to create different S3 servers for your tests, for example one per unit-test.
 It is a work in progess and only some APIs are implemented (Feel free to contribute)
 
 ## Build
 
-This project use [dep](https://github.com/golang/dep), running `dep ensure -v` will update the vendor directory with all dependencies.
-
-## Build after changes
-
-If you made some changes and wants to test, just run `make` in the root directory will install `dep` if not yet present and then run `dep ensure -v` to update the vendor directory. Next, it will run the `go test` and calculate the test coverage. It will also check that all files contain the copyright.
+This project uses [dep](https://github.com/golang/dep), running `dep ensure -v` will update the vendor directory with all dependencies.
+If your projectg doesn't use `dep` then you will need to make available all packages of the vendor directory to your project.
 
 ## Usage
 
@@ -21,10 +18,9 @@ To get a client call the `s3mem.New()` function. It returns a s3iface.ClientAPI 
 As example here a method which retrieves an object from an S3 implementation [Example](example/example.go) and here how to write a test for it [Example Test](example/example_test.go) using s3mem. It shows also how to manage multiple s3 servers.
 The s3mem package offers a number of helper methods to manage the buckets and objects without using the S3API. These methods will directly modify the in-memory s3. This is useful to setup your tests. You can find them in the [Helper methods](s3mem/helper.go). To create new S3 server call `NewDefaultS3MemService()` or `NewS3MemService(<s3-name>)` and to get the store `GetDefaultS3MemService()` or `GetS3MemService(<s3-name>)`.
 
-
 ## Implemented mehtods
 
-```
+```go
 CopyObjectRequest(*s3.CopyObjectInput) s3.CopyObjectRequest
 CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest
 DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest
@@ -40,7 +36,9 @@ PutObjectRequest(input *s3.PutObjectInput) s3.PutObjectRequest
 
 ## Not implemented methods
 
-```
+A call to Non-implemented methods will return a ErrCodeNotImplemented error.
+
+```go
 AbortMultipartUploadRequest(*s3.AbortMultipartUploadInput) s3.AbortMultipartUploadRequest
 CompleteMultipartUploadRequest(*s3.CompleteMultipartUploadInput) s3.CompleteMultipartUploadRequest
 CreateMultipartUploadRequest(*s3.CreateMultipartUploadInput) s3.CreateMultipartUploadRequest
