@@ -5,3 +5,4 @@ vendor
 _vendor*
 debug.test
 c.out
+.vscode

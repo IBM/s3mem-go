@@ -1,0 +1,3 @@
+# MAINTAINERS
+
+Dominique Vernier
